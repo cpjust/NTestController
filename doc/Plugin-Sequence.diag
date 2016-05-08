@@ -1,12 +1,12 @@
 seqdiag {
-    nTestController  -> Reader [label="ReadTestsToRun()"];
-    nTestController <-- Reader;
-    nTestController  -> Setup [label="SetupTestEnvironment()"];
-    nTestController <-- Setup;
-    nTestController  -> Executor [label="ExecuteTests()"];
-    nTestController <-- Executor [label="Test Results"];
-    nTestController  -> Cleanup [label="CleanupEnvironment()"];
-    nTestController <-- Cleanup;
-    nTestController  -> Reporter [label="ReportTestResults()"];
-    nTestController <-- Reporter;
+    NTestController  -> Reader [label="ReadTestsToRun()"];
+    NTestController <-- Reader;
+    NTestController  -> Setup [label="SetupTestEnvironment()"];
+    NTestController <-- Setup;
+    NTestController  -> Executor [label="ExecuteTests()"];
+    NTestController <-- Executor [label="Test Results"];
+    NTestController  -> Cleanup [label="CleanupEnvironment()"];
+    NTestController <-- Cleanup;
+    NTestController  -> Reporter [label="ReportTestResults()"];
+    NTestController <-- Reporter;
 }
