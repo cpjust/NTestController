@@ -1,0 +1,19 @@
+﻿<Properties StartupItem="NTestController/NTestController.csproj">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="LoggerTests/LoggerTests.cs">
+    <Files>
+      <File FileName="Plugins/NUnit-Reader/NUnitReader.cs" Line="1" Column="1" />
+      <File FileName="Plugins/NUnit-Reader/PlatformFactory.cs" Line="1" Column="1" />
+      <File FileName="NTestController/Factories/PlatformFactory.cs" Line="1" Column="1" />
+      <File FileName="NTestController/NTestController.cs" Line="1" Column="1" />
+      <File FileName="Logger/ILogger.cs" Line="1" Column="1" />
+      <File FileName="Logger/BaseLogger.cs" Line="1" Column="1" />
+      <File FileName="Logger/ConsoleLogger.cs" Line="1" Column="1" />
+      <File FileName="LoggerTests/LoggerTests.cs" Line="66" Column="9" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>
