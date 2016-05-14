@@ -44,6 +44,7 @@ namespace NTestController
         [ParserState]
         public IParserState LastParserState { get; set; }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate")]
         [HelpOption]
         public string GetUsage()
         {

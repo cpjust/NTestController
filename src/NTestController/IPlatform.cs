@@ -17,6 +17,7 @@ namespace NTestController
         /// <summary>
         /// The CPU type.  Ex.  x86 or x64.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId = "CPU")]
         string CPU { get; set; }
     }
 }

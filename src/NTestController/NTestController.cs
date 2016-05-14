@@ -1,11 +1,14 @@
 ﻿using System;
-using System.Xml;
 using System.Collections.Generic;
+using System.Xml;
 using Logger;
+using NTestController.Factories;
 
+[assembly: CLSCompliant(true)]
+[assembly: System.Runtime.InteropServices.ComVisible(false)]
 namespace NTestController
 {
-    public class NTestController
+    public static class NTestControllerApp
     {
         #region Member variables
 

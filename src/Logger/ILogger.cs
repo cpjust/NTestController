@@ -32,8 +32,8 @@ namespace Logger
         /// Prints a message to standard error only if the log level is Error,
         /// and prepends the date/time and requested log level.
         /// </summary>
-        /// <param name="msg">The string to be printed.</param>
-        void WriteError(string msg);
+        /// <param name="message">The string to be printed.</param>
+        void WriteError(string message);
 
         /// <summary>
         /// Prints a formatted message to standard error only if the log level is Error,
@@ -41,14 +41,14 @@ namespace Logger
         /// </summary>
         /// <param name="format">A format string.</param>
         /// <param name="args">The arguments for the format string.</param>
-        void WriteError(string format, params Object[] msg);
+        void WriteError(string format, params Object[] args);
 
         /// <summary>
         /// Prints a message to standard error if the log level is Warning or higher,
         /// and prepends the date/time and requested log level.
         /// </summary>
-        /// <param name="msg">The string to be printed.</param>
-        void WriteWarning(string msg);
+        /// <param name="message">The string to be printed.</param>
+        void WriteWarning(string message);
 
         /// <summary>
         /// Prints a formatted message to standard error if the log level is Warning or higher,
@@ -56,14 +56,14 @@ namespace Logger
         /// </summary>
         /// <param name="format">A format string.</param>
         /// <param name="args">The arguments for the format string.</param>
-        void WriteWarning(string format, params Object[] msg);
+        void WriteWarning(string format, params Object[] args);
 
         /// <summary>
         /// Prints a message to standard output if the log level is Info or higher,
         /// and prepends the date/time and requested log level.
         /// </summary>
-        /// <param name="msg">The string to be printed.</param>
-        void WriteInfo(string msg);
+        /// <param name="message">The string to be printed.</param>
+        void WriteInfo(string message);
 
         /// <summary>
         /// Prints a formatted message to standard output if the log level is Info or higher,
@@ -77,8 +77,8 @@ namespace Logger
         /// Prints a message to standard output if the log level is Debug or higher,
         /// and prepends the date/time and requested log level.
         /// </summary>
-        /// <param name="msg">The string to be printed.</param>
-        void WriteDebug(string msg);
+        /// <param name="message">The string to be printed.</param>
+        void WriteDebug(string message);
 
         /// <summary>
         /// Prints a formatted message to standard output if the log level is Debug or higher,
@@ -86,14 +86,14 @@ namespace Logger
         /// </summary>
         /// <param name="format">A format string.</param>
         /// <param name="args">The arguments for the format string.</param>
-        void WriteDebug(string format, params Object[] msg);
+        void WriteDebug(string format, params Object[] args);
 
         /// <summary>
         /// Prints a message to standard output if the log level is Trace or higher,
         /// and prepends the date/time and requested log level.
         /// </summary>
-        /// <param name="msg">The string to be printed.</param>
-        void WriteTrace(string msg);
+        /// <param name="message">The string to be printed.</param>
+        void WriteTrace(string message);
 
         /// <summary>
         /// Prints a formatted message to standard output if the log level is Trace or higher,
@@ -101,7 +101,7 @@ namespace Logger
         /// </summary>
         /// <param name="format">A format string.</param>
         /// <param name="args">The arguments for the format string.</param>
-        void WriteTrace(string format, params Object[] msg);
+        void WriteTrace(string format, params Object[] args);
 
         #endregion
     }

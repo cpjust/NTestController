@@ -6,7 +6,7 @@ namespace Logger
     public class ConsoleLogger : BaseLogger, ILogger
     {
         #region Properties
-        
+
         /// <summary>
         /// Gets the instance of the ConsoleLogger singleton.
         /// </summary>

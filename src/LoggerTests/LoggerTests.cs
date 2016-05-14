@@ -2,11 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
 using Logger;
 using System.Text;
 using System.Globalization;
 
+[assembly: CLSCompliant(true)]
 namespace LoggerTests
 {
     class TestLogger : BaseLogger, ILogger
@@ -45,7 +45,7 @@ namespace LoggerTests
     }
     
     [TestFixture]
-    public class LoggerTests
+    public class TestsForLogger
     {
         private const string STRING_TO_PRINT = "abcdefghijklmnopqrstuvwxyz0123456789";
 
@@ -74,8 +74,8 @@ namespace LoggerTests
             _oldOutputWriter = _logger.OutputWriter;
             _oldErrorWriter = _logger.ErrorWriter;
 
-            _logger.OutputWriter = new StringWriter(_outputStringBuilder);
-            _logger.ErrorWriter = new StringWriter(_errorStringBuilder);
+            _logger.OutputWriter = new StringWriter(_outputStringBuilder, CultureInfo.InvariantCulture);
+            _logger.ErrorWriter = new StringWriter(_errorStringBuilder, CultureInfo.InvariantCulture);
 
         }
 
@@ -136,7 +136,7 @@ namespace LoggerTests
         [TestCaseSource(nameof(AllLevels))]
         public void WriteError_PrintsToStdOutUnlessLogLevelIsNone(VerboseLevel levelToSet)
         {
-            bool writeToStdErr = true;
+            const bool writeToStdErr = true;
             var levelsToPrint = new List<VerboseLevel> { VerboseLevel.ERROR, VerboseLevel.WARNING, VerboseLevel.INFO, VerboseLevel.DEBUG, VerboseLevel.TRACE };
             WriteFunc_PrintsOnlyIfLogLevelIsInList(levelToSet, writeToStdErr, levelsToPrint, "WriteError", _logger.WriteError);
         }
@@ -144,7 +144,7 @@ namespace LoggerTests
         [TestCaseSource(nameof(AllLevels))]
         public void WriteWarning_PrintsToStdOutUnlessLogLevelIsErrorOrNone(VerboseLevel levelToSet)
         {
-            bool writeToStdErr = true;
+            const bool writeToStdErr = true;
             var levelsToPrint = new List<VerboseLevel> { VerboseLevel.WARNING, VerboseLevel.INFO, VerboseLevel.DEBUG, VerboseLevel.TRACE };
             WriteFunc_PrintsOnlyIfLogLevelIsInList(levelToSet, writeToStdErr, levelsToPrint, "WriteWarning", _logger.WriteWarning);
         }
@@ -152,7 +152,7 @@ namespace LoggerTests
         [TestCaseSource(nameof(AllLevels))]
         public void WriteInfo_PrintsToStdOutOnlyIfLogLevelIsInfoOrDebugOrTrace(VerboseLevel levelToSet)
         {
-            bool writeToStdErr = false;
+            const bool writeToStdErr = false;
             var levelsToPrint = new List<VerboseLevel> { VerboseLevel.INFO, VerboseLevel.DEBUG, VerboseLevel.TRACE };
             WriteFunc_PrintsOnlyIfLogLevelIsInList(levelToSet, writeToStdErr, levelsToPrint, "WriteInfo", _logger.WriteInfo);
         }
@@ -160,7 +160,7 @@ namespace LoggerTests
         [TestCaseSource(nameof(AllLevels))]
         public void WriteDebug_PrintsToStdOutOnlyIfLogLevelIsDebugOrTrace(VerboseLevel levelToSet)
         {
-            bool writeToStdErr = false;
+            const bool writeToStdErr = false;
             var levelsToPrint = new List<VerboseLevel> { VerboseLevel.DEBUG, VerboseLevel.TRACE };
             WriteFunc_PrintsOnlyIfLogLevelIsInList(levelToSet, writeToStdErr, levelsToPrint, "WriteDebug", _logger.WriteDebug);
         }
@@ -168,11 +168,19 @@ namespace LoggerTests
         [TestCaseSource(nameof(AllLevels))]
         public void WriteTrace_PrintsToStdOutOnlyIfLogLevelIsTrace(VerboseLevel levelToSet)
         {
-            bool writeToStdErr = false;
+            const bool writeToStdErr = false;
             var levelsToPrint = new List<VerboseLevel> { VerboseLevel.TRACE };
             WriteFunc_PrintsOnlyIfLogLevelIsInList(levelToSet, writeToStdErr, levelsToPrint, "WriteTrace", _logger.WriteTrace);
         }
 
+        /// <summary>
+        /// Helper function that runs the single parameter Write function tests.
+        /// </summary>
+        /// <param name="levelToSet">The VerboseLevel to set before running the Write function.</param>
+        /// <param name="writeToStdErr">Pass true if the Write function should print to stderr, otherwise pass false.</param>
+        /// <param name="levelsToPrint">A list of VerboseLevels that (when set) should produce output given the Write function being tested.</param>
+        /// <param name="funcName">The name of the Write function being tested.</param>
+        /// <param name="function">The Write function to call.</param>
         private void WriteFunc_PrintsOnlyIfLogLevelIsInList(
             VerboseLevel levelToSet,
             bool writeToStdErr,
@@ -183,43 +191,40 @@ namespace LoggerTests
             // *** Setup
             _logger.LogLevel = levelToSet;
 
-            foreach (VerboseLevel level in AllLevels)
+            _errorStringBuilder.Clear();
+            _outputStringBuilder.Clear();
+            StringBuilder targetStr = _outputStringBuilder;
+            StringBuilder emptyStr = _errorStringBuilder;
+            string targetStrName = "stdout";
+            string emptyStrName = "stderr";
+
+            if (writeToStdErr)
             {
-                _errorStringBuilder.Clear();
-                _outputStringBuilder.Clear();
-                StringBuilder targetStr = _outputStringBuilder;
-                StringBuilder emptyStr = _errorStringBuilder;
-                string targetStrName = "stdout";
-                string emptyStrName = "stderr";
-
-                if (writeToStdErr)
-                {
-                    targetStr = _errorStringBuilder;
-                    emptyStr = _outputStringBuilder;
-                    targetStrName = "stderr";
-                    emptyStrName = "stdout";
-                }
-
-                // *** Execute
-                function(STRING_TO_PRINT);
-
-                // *** Assert
-                if (levelsToPrint.Contains(levelToSet))
-                {
-                    Assert.That(targetStr.ToString().Contains(STRING_TO_PRINT),
-                        "{0} didn't print to {1} with LogLevel set to {2}!", funcName, targetStrName, levelToSet.ToString());
-                }
-                else
-                {
-                    Assert.IsEmpty(targetStr.ToString(),
-                        "{0} wrote a string to {1} with LogLevel set to {2}!", funcName, targetStrName, levelToSet.ToString());
-                }
-
-                // Error & Warning should never print to stdout.
-                // The others should never print to stderr.
-                Assert.IsEmpty(emptyStr.ToString(),
-                    "{0} wrote a string to {1}!", funcName, emptyStrName);
+                targetStr = _errorStringBuilder;
+                emptyStr = _outputStringBuilder;
+                targetStrName = "stderr";
+                emptyStrName = "stdout";
             }
+
+            // *** Execute
+            function(STRING_TO_PRINT);
+
+            // *** Assert
+            if (levelsToPrint.Contains(levelToSet))
+            {
+                Assert.That(targetStr.ToString().Contains(STRING_TO_PRINT),
+                    "{0} didn't print to {1} with LogLevel set to {2}!", funcName, targetStrName, levelToSet.ToString());
+            }
+            else
+            {
+                Assert.IsEmpty(targetStr.ToString(),
+                    "{0} wrote a string to {1} with LogLevel set to {2}!", funcName, targetStrName, levelToSet.ToString());
+            }
+
+            // Error & Warning should never print to stdout.
+            // The others should never print to stderr.
+            Assert.IsEmpty(emptyStr.ToString(),
+                "{0} wrote a string to {1}!", funcName, emptyStrName);
         }
 
         #endregion Write(string) tests
@@ -230,7 +235,7 @@ namespace LoggerTests
         [TestCaseSource(nameof(AllLevels))]
         public void WriteErrorWithArgs_PrintsToStdOutUnlessLogLevelIsNone(VerboseLevel levelToSet)
         {
-            bool writeToStdErr = true;
+            const bool writeToStdErr = true;
             var levelsToPrint = new List<VerboseLevel> { VerboseLevel.ERROR, VerboseLevel.WARNING, VerboseLevel.INFO, VerboseLevel.DEBUG, VerboseLevel.TRACE };
             WriteFuncWithArgs_PrintsOnlyIfLogLevelIsInList(levelToSet, writeToStdErr, levelsToPrint, "WriteError", _logger.WriteError);
         }
@@ -238,7 +243,7 @@ namespace LoggerTests
         [TestCaseSource(nameof(AllLevels))]
         public void WriteWarningWithArgs_PrintsToStdOutUnlessLogLevelIsErrorOrNone(VerboseLevel levelToSet)
         {
-            bool writeToStdErr = true;
+            const bool writeToStdErr = true;
             var levelsToPrint = new List<VerboseLevel> { VerboseLevel.WARNING, VerboseLevel.INFO, VerboseLevel.DEBUG, VerboseLevel.TRACE };
             WriteFuncWithArgs_PrintsOnlyIfLogLevelIsInList(levelToSet, writeToStdErr, levelsToPrint, "WriteWarning", _logger.WriteWarning);
         }
@@ -246,7 +251,7 @@ namespace LoggerTests
         [TestCaseSource(nameof(AllLevels))]
         public void WriteInfoWithArgs_PrintsToStdOutOnlyIfLogLevelIsInfoOrDebugOrTrace(VerboseLevel levelToSet)
         {
-            bool writeToStdErr = false;
+            const bool writeToStdErr = false;
             var levelsToPrint = new List<VerboseLevel> { VerboseLevel.INFO, VerboseLevel.DEBUG, VerboseLevel.TRACE };
             WriteFuncWithArgs_PrintsOnlyIfLogLevelIsInList(levelToSet, writeToStdErr, levelsToPrint, "WriteInfo", _logger.WriteInfo);
         }
@@ -254,7 +259,7 @@ namespace LoggerTests
         [TestCaseSource(nameof(AllLevels))]
         public void WriteDebugWithArgs_PrintsToStdOutOnlyIfLogLevelIsDebugOrTrace(VerboseLevel levelToSet)
         {
-            bool writeToStdErr = false;
+            const bool writeToStdErr = false;
             var levelsToPrint = new List<VerboseLevel> { VerboseLevel.DEBUG, VerboseLevel.TRACE };
             WriteFuncWithArgs_PrintsOnlyIfLogLevelIsInList(levelToSet, writeToStdErr, levelsToPrint, "WriteDebug", _logger.WriteDebug);
         }
@@ -262,11 +267,19 @@ namespace LoggerTests
         [TestCaseSource(nameof(AllLevels))]
         public void WriteTraceWithArgs_PrintsToStdOutOnlyIfLogLevelIsTrace(VerboseLevel levelToSet)
         {
-            bool writeToStdErr = false;
+            const bool writeToStdErr = false;
             var levelsToPrint = new List<VerboseLevel> { VerboseLevel.TRACE };
             WriteFuncWithArgs_PrintsOnlyIfLogLevelIsInList(levelToSet, writeToStdErr, levelsToPrint, "WriteTrace", _logger.WriteTrace);
         }
 
+        /// <summary>
+        /// Helper function that runs the multiple parameter Write function tests.
+        /// </summary>
+        /// <param name="levelToSet">The VerboseLevel to set before running the Write function.</param>
+        /// <param name="writeToStdErr">Pass true if the Write function should print to stderr, otherwise pass false.</param>
+        /// <param name="levelsToPrint">A list of VerboseLevels that (when set) should produce output given the Write function being tested.</param>
+        /// <param name="funcName">The name of the Write function being tested.</param>
+        /// <param name="function">The Write function to call.</param>
         private void WriteFuncWithArgs_PrintsOnlyIfLogLevelIsInList(
             VerboseLevel levelToSet,
             bool writeToStdErr,
@@ -279,45 +292,42 @@ namespace LoggerTests
             // *** Setup
             _logger.LogLevel = levelToSet;
 
-            foreach (VerboseLevel level in AllLevels)
+            _errorStringBuilder.Clear();
+            _outputStringBuilder.Clear();
+            StringBuilder targetStr = _outputStringBuilder;
+            StringBuilder emptyStr = _errorStringBuilder;
+            string targetStrName = "stdout";
+            string emptyStrName = "stderr";
+            Object[] args = { levelToSet, (int)levelToSet };
+            string stringToMatch = string.Format(CultureInfo.InvariantCulture, FORMAT_STRING, args);
+
+            if (writeToStdErr)
             {
-                _errorStringBuilder.Clear();
-                _outputStringBuilder.Clear();
-                StringBuilder targetStr = _outputStringBuilder;
-                StringBuilder emptyStr = _errorStringBuilder;
-                string targetStrName = "stdout";
-                string emptyStrName = "stderr";
-                Object[] args = { level.ToString(), (int)level };
-                string stringToMatch = string.Format(CultureInfo.InvariantCulture, FORMAT_STRING, args);
-
-                if (writeToStdErr)
-                {
-                    targetStr = _errorStringBuilder;
-                    emptyStr = _outputStringBuilder;
-                    targetStrName = "stderr";
-                    emptyStrName = "stdout";
-                }
-
-                // *** Execute
-                function(FORMAT_STRING, args);
-
-                // *** Assert
-                if (levelsToPrint.Contains(levelToSet))
-                {
-                    Assert.That(targetStr.ToString().Contains(stringToMatch),
-                        "{0} didn't print to {1} with LogLevel set to {2}!", funcName, targetStrName, levelToSet.ToString());
-                }
-                else
-                {
-                    Assert.IsEmpty(targetStr.ToString(),
-                        "{0} wrote a string to {1} with LogLevel set to {2}!", funcName, targetStrName, levelToSet.ToString());
-                }
-
-                // Error & Warning should never print to stdout.
-                // The others should never print to stderr.
-                Assert.IsEmpty(emptyStr.ToString(),
-                    "{0} wrote a string to {1}!", funcName, emptyStrName);
+                targetStr = _errorStringBuilder;
+                emptyStr = _outputStringBuilder;
+                targetStrName = "stderr";
+                emptyStrName = "stdout";
             }
+
+            // *** Execute
+            function(FORMAT_STRING, args);
+
+            // *** Assert
+            if (levelsToPrint.Contains(levelToSet))
+            {
+                Assert.That(targetStr.ToString().Contains(stringToMatch),
+                    "{0} didn't print to {1} with LogLevel set to {2}!", funcName, targetStrName, levelToSet.ToString());
+            }
+            else
+            {
+                Assert.IsEmpty(targetStr.ToString(),
+                    "{0} wrote a string to {1} with LogLevel set to {2}!", funcName, targetStrName, levelToSet.ToString());
+            }
+
+            // Error & Warning should never print to stdout.
+            // The others should never print to stderr.
+            Assert.IsEmpty(emptyStr.ToString(),
+                "{0} wrote a string to {1}!", funcName, emptyStrName);
         }
 
         #endregion Write(string, args) tests

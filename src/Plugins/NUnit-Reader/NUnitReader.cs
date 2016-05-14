@@ -1,10 +1,12 @@
 ﻿using System;
 
+[assembly: CLSCompliant(true)]
+[assembly: System.Runtime.InteropServices.ComVisible(false)]
 namespace NUnitReader
 {
-    public class NUnitReader
+    public class NUnitReaderPlugin
     {
-        public NUnitReader()
+        public NUnitReaderPlugin()
         {
             throw new NotImplementedException();
         }
