@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Xml;
 using Logger;
 using NTestController.Factories;
@@ -29,9 +30,28 @@ namespace NTestController
             {
                 if (parser.ParseArgumentsStrict(args, _options, () => Environment.Exit(-1)))
                 {
-                    // Set logging level.
+                    // Set logging level (default = INFO).
+                    if (_options.VerboseLevel != null)
+                    {
+                        VerboseLevel logLevel;
 
-                    // Create output directory.
+                        if (Enum.TryParse<VerboseLevel>(_options.VerboseLevel, ignoreCase: true, result: out logLevel))
+                        {
+                            Log.LogLevel = logLevel;
+                        }
+                        else
+                        {
+                            Log.LogLevel = VerboseLevel.INFO;
+                        }
+                    }
+
+                    // Delete & re-create output directory.
+                    if (Directory.Exists(_options.OutputDirectory))
+                    {
+                        Directory.Delete(_options.OutputDirectory, recursive: true);
+                    }
+
+                    Directory.CreateDirectory(_options.OutputDirectory);
 
                     // Load plugins.
 

@@ -17,7 +17,7 @@ namespace NTestController
 
         [Option('o', "output", MetaValue = "DIRECTORY", Required = true,
             HelpText = "The top-level directory where the XML test results are stored.")]
-        public string Directory { get; set; }
+        public string OutputDirectory { get; set; }
 
         // Optional parameters:
         [Option('d', "dry-run", MetaValue = "true", DefaultValue = false,
