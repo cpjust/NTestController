@@ -75,5 +75,9 @@
       <Project>{1E2BD695-E014-4D56-9147-9C00BABD8216}</Project>
       <Name>NTestController</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Utilities\Utilities.csproj">
+      <Project>{FA9DC35C-2A8B-4AD6-B961-A2E6EF1F6E4A}</Project>
+      <Name>Utilities</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>
