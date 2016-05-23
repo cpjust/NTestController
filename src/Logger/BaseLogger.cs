@@ -69,7 +69,7 @@ namespace Logger
             if (ShouldWrite(level))
             {
                 string datetime = DateTime.Now.ToString("u", CultureInfo.InvariantCulture);
-                format = string.Format(CultureInfo.InvariantCulture, "{0} {1}: {2}", datetime, level.ToString(), format);
+                format = StringUtils.FormatInvariant("{0} {1}: {2}", datetime, level.ToString(), format);
 
                 lock (_lock)
                 {
@@ -93,11 +93,11 @@ namespace Logger
             if (ShouldWrite(level))
             {
                 string datetime = DateTime.Now.ToString("u");
-                format = string.Format(CultureInfo.InvariantCulture, "{0} {1}: {2}", datetime, level.ToString(), format);
+                format = StringUtils.FormatInvariant("{0} {1}: {2}", datetime, level.ToString(), format);
 
                 if (args != null)
                 {
-                    format = string.Format(CultureInfo.InvariantCulture, format, args);
+                    format = StringUtils.FormatInvariant(format, args);
                 }
 
                 await _semaphore.WaitAsync();

@@ -44,6 +44,8 @@
     <Compile Include="IComputer.cs" />
     <Compile Include="IPlatform.cs" />
     <Compile Include="NTestController.cs" />
+    <Compile Include="IPlugin.cs" />
+    <Compile Include="Factories\PluginFactory.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

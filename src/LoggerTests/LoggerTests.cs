@@ -5,6 +5,7 @@ using System.IO;
 using Logger;
 using System.Text;
 using System.Globalization;
+using Utilities;
 
 [assembly: CLSCompliant(true)]
 namespace LoggerTests
@@ -299,7 +300,7 @@ namespace LoggerTests
             string targetStrName = "stdout";
             string emptyStrName = "stderr";
             Object[] args = { levelToSet, (int)levelToSet };
-            string stringToMatch = string.Format(CultureInfo.InvariantCulture, FORMAT_STRING, args);
+            string stringToMatch = StringUtils.FormatInvariant(FORMAT_STRING, args);
 
             if (writeToStdErr)
             {

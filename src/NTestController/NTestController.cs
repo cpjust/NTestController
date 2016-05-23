@@ -54,8 +54,10 @@ namespace NTestController
                     Directory.CreateDirectory(_options.OutputDirectory);
 
                     // Load plugins.
+                    Dictionary<PluginType, IPlugin> plugins = GetPlugins(_options.ConfigFile);
 
                     // Execute Reader plugin.
+                    plugins[PluginType.TestReader].Execute();
 
                     // Execute Setup plugin.
 
@@ -71,6 +73,31 @@ namespace NTestController
         #endregion Public functions
 
         #region Private functions
+
+        private static Dictionary<PluginType, IPlugin> GetPlugins(string configFile)
+        {
+            try
+            {
+                var XMLDoc = new XmlDocument();
+                XMLDoc.Load(configFile);
+
+                XmlNode pluginsNode = XMLDoc.FirstChild.SelectSingleNode("plugins");
+                var plugins = new Dictionary<PluginType, IPlugin>();
+
+                foreach (XmlNode node in pluginsNode)
+                {
+                    IPlugin plugin = PluginFactory.GetPlugin(node, configFile);
+                    plugins.Add(plugin.PluginType, plugin);
+                }
+
+                return plugins;
+            }
+            catch (Exception e)
+            {
+                Log.WriteError("\n{0}\n\n{1}", e.Message, _options.GetUsage());
+                throw;
+            }
+        }
 
         private static XmlNode GetDefaultsXmlNode(string configFile)
         {
