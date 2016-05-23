@@ -15,6 +15,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utilities", "Utilities\Util
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UtilitiesTests", "UtilitiesTests\UtilitiesTests.csproj", "{5B54999B-54F8-49AF-A766-33765AD3DF4D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NullPlugin", "NullPlugin\NullPlugin.csproj", "{B547D38A-75A1-43C5-9D6A-75FB1F4A5039}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NTestControllerTests", "NTestControllerTests\NTestControllerTests.csproj", "{B34AC523-6DC3-4D5B-87C2-66BB939ECC54}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,6 +45,14 @@ Global
 		{87A13F32-F014-4F67-BCD3-7CAFA80A27CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{87A13F32-F014-4F67-BCD3-7CAFA80A27CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{87A13F32-F014-4F67-BCD3-7CAFA80A27CD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B34AC523-6DC3-4D5B-87C2-66BB939ECC54}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B34AC523-6DC3-4D5B-87C2-66BB939ECC54}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B34AC523-6DC3-4D5B-87C2-66BB939ECC54}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B34AC523-6DC3-4D5B-87C2-66BB939ECC54}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B547D38A-75A1-43C5-9D6A-75FB1F4A5039}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B547D38A-75A1-43C5-9D6A-75FB1F4A5039}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B547D38A-75A1-43C5-9D6A-75FB1F4A5039}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B547D38A-75A1-43C5-9D6A-75FB1F4A5039}.Release|Any CPU.Build.0 = Release|Any CPU
 		{FA9DC35C-2A8B-4AD6-B961-A2E6EF1F6E4A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{FA9DC35C-2A8B-4AD6-B961-A2E6EF1F6E4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FA9DC35C-2A8B-4AD6-B961-A2E6EF1F6E4A}.Release|Any CPU.ActiveCfg = Release|Any CPU

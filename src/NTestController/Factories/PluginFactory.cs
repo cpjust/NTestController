@@ -46,6 +46,9 @@ namespace NTestController
         /// <returns>The plugin.</returns>
         public static IPlugin LoadPlugin(string dllFile, string xmlConfig)
         {
+            ThrowIf.StringIsNullOrWhiteSpace(dllFile, nameof(dllFile));
+            ThrowIf.StringIsNullOrWhiteSpace(xmlConfig, nameof(xmlConfig));
+            
             if (!File.Exists(dllFile))
             {
                 throw new DllNotFoundException(StringUtils.FormatInvariant("Could not find: '{0}'!", dllFile));

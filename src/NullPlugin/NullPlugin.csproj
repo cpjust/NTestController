@@ -1,12 +1,12 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{87A13F32-F014-4F67-BCD3-7CAFA80A27CD}</ProjectGuid>
+    <ProjectGuid>{B547D38A-75A1-43C5-9D6A-75FB1F4A5039}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>Logger</RootNamespace>
-    <AssemblyName>Logger</AssemblyName>
+    <RootNamespace>NullPlugin</RootNamespace>
+    <AssemblyName>NullPlugin</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -23,7 +23,6 @@
     <CodeAnalysisRuleSet>..\AlmostAllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>full</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>..\bin\Release</OutputPath>
     <ErrorReport>prompt</ErrorReport>
@@ -37,17 +36,22 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ILogger.cs" />
-    <Compile Include="ConsoleLogger.cs" />
-    <Compile Include="BaseLogger.cs" />
+    <Compile Include="NullPlugin.cs" />
   </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
+    <ProjectReference Include="..\NTestController\NTestController.csproj">
+      <Project>{1E2BD695-E014-4D56-9147-9C00BABD8216}</Project>
+      <Name>NTestController</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Utilities\Utilities.csproj">
       <Project>{FA9DC35C-2A8B-4AD6-B961-A2E6EF1F6E4A}</Project>
       <Name>Utilities</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Logger\Logger.csproj">
+      <Project>{87A13F32-F014-4F67-BCD3-7CAFA80A27CD}</Project>
+      <Name>Logger</Name>
+    </ProjectReference>
   </ItemGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
