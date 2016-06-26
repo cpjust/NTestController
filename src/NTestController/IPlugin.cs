@@ -27,7 +27,7 @@ namespace NTestController
         /// <summary>
         /// Gets the plugin.
         /// </summary>
-        /// <param name="xmlConfig">The NTestController.xml config.</param>
+        /// <param name="xmlConfig">The NTestController.xml config path and filename.</param>
         /// <returns>The plugin.</returns>
         IPlugin GetPlugin(string xmlConfig);
     }

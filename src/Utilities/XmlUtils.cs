@@ -11,6 +11,7 @@ namespace Utilities
         /// <param name="node">The XmlNode containing the attribute you want.</param>
         /// <param name="attributeName">The attribute name.</param>
         /// <returns>The xml attribute value.</returns>
+        /// <exception cref="XmlException">There was an error parsing the XmlNode.</exception>
         public static string GetXmlAttribute(XmlNode node, string attributeName)
         {
             ThrowIf.ArgumentNull(node, nameof(XmlNodeType));
@@ -18,7 +19,7 @@ namespace Utilities
 
             if (node.Attributes[attributeName] == null)
             {
-                throw new ArgumentException(StringUtils.FormatInvariant("No XML attribute named '{0}' was found!", attributeName));
+                throw new XmlException(StringUtils.FormatInvariant("No XML attribute named '{0}' was found!", attributeName));
             }
 
             return node.Attributes[attributeName].Value;

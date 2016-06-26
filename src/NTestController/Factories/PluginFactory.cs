@@ -14,8 +14,14 @@ namespace NTestController
         /// <param name="node">The XmlNode containing the path to the plugin DLL.</param>
         /// <param name="xmlConfig">The NTestController.xml config file.</param>
         /// <returns>The plugin.</returns>
+        /// <exception cref="ArgumentNullException">A null or whitespace only argument was passed in.</exception>
+        /// <exception cref="ArgumentException">The XML node contains an unknown plugin type.</exception>
+        /// <exception cref="TypeLoadException">The plugin DLL doesn't contain the plugin type specified in the XML node.</exception>
+        /// <exception cref="XmlException">There was an error parsing the XmlNode.</exception>
         public static IPlugin GetPlugin(XmlNode node, string xmlConfig)
         {
+            ThrowIf.ArgumentNull(node, nameof(node));
+
             string dllFile = XmlUtils.GetXmlAttribute(node, "path");
             string pluginTypeString = XmlUtils.GetXmlAttribute(node, "type");
             PluginType pluginType;
@@ -42,8 +48,11 @@ namespace NTestController
         /// Loads the plugin.
         /// </summary>
         /// <param name="dllFile">The path to the DLL file.</param>
-        /// <param name="xmlConfig">The NTestController.xml config file.</param>
+        /// <param name="xmlConfig">The NTestController.xml config path and filename.</param>
         /// <returns>The plugin.</returns>
+        /// <exception cref="ArgumentNullException">A null or whitespace only argument was passed in.</exception>
+        /// <exception cref="DllNotFoundException">The DLL doesn't exist.</exception>
+        /// <exception cref="EntryPointNotFoundException">The DLL doesn't implement the IPlugin interface.</exception>
         public static IPlugin LoadPlugin(string dllFile, string xmlConfig)
         {
             ThrowIf.StringIsNullOrWhiteSpace(dllFile, nameof(dllFile));

@@ -1,0 +1,64 @@
+<ntest_controller>
+    <plugins>
+        <plugin type="TestReader"   path="C:\NTestController\plugins\NUnit-Reader.dll" />
+        <plugin type="EnvSetup"      path="C:\NTestController\plugins\Null-Setup.dll" />
+        <plugin type="TestExecutor" path="C:\NTestController\plugins\NUnit-Executor.dll" />
+        <plugin type="EnvCleanup"  path="C:\NTestController\plugins\Null-Cleanup.dll" />
+        <plugin type="TestReporter" path="C:\NTestController\plugins\NUnit-Reporter.dll" />
+    </plugins>
+
+    <!-- REQUIRED - Only 1 <defaults> tag allowed.
+        All tags inside <defaults> are required if they are not specified in the computer nodes below.
+        Only 1 of each is allowed. -->
+    <defaults>
+        <computer timeout="600" />
+        <credentials username="Administrator" password="password" />
+        <nunit path="C:\Program Files (x86)\NUnit 2.6.4\bin\nunit-console.exe" />
+        <test_results path=".\Test_Results" />
+        <working_dir path="C:\Jenkins\workspace\foo" />
+    </defaults>
+
+    <!-- REQUIRED - Multiple <platform> tags allowed.
+        os: The OS name.
+        version: The OS version.
+        cpu: Should be either "x86" or "x64". -->
+    <platform os="windows" version="2012R2" cpu="x64">
+
+        <!-- REQUIRED - Multiple <computer> tags allowed in each <platform> section.
+            hostname: The hostname, alias or IP Address of the target test machine.
+            timeout: (optional if specified in defaults) The max number of seconds to wait for each test to finish. -->
+        <computer hostname="TestVM1" timeout="600">
+
+            <!-- OPTIONAL if specified in defaults - Multiple <env_var> tags are allowed per <computer> section.  This
+                    overrides any environment variables with the same name in the <defaults> tag for this machine.
+                    Used to add environment variables for the thread responsible for running tests on this computer.
+                    Ex. This might be necessary if your tests need a different config file for each computer...
+                name: The environment variable name.
+                value: The value for this variable. -->
+            <env_var name="CONFIG_FILE" value=".\conf\TestVM1.conf" />
+
+            <!-- (used by the NUnit-Executor.dll) OPTIONAL if specified in defaults - Only 1 <nunit> tag allowed per <computer> section.
+                    This overrides the nunit path in the <defaults> tag for this machine.
+                path: The path to nunit-console on the target machine. -->
+            <nunit path="C:\Program Files (x86)\NUnit 2.5.9\bin\net-2.0\nunit-console.exe" />
+
+            <!-- OPTIONAL if specified in defaults - Only 1 <test_results> tag allowed per <computer> section.  This
+                    overrides the test_results path in the <defaults> tag for this machine.
+                path: The relative path where the test results will be collected on the local machine.  This is
+                    relative to the path specified in the --output command line argument. -->
+            <test_results path=".\Temp\Test_Results" />
+
+            <!-- OPTIONAL if specified in defaults - Only 1 <working_dir> tag allowed per <computer> section.  This
+                    overrides the working_dir path in the <defaults> tag for this machine.
+                path: The relative working directory path for any sub-processes that are executed. -->
+            <working_dir path=".\bin" />
+
+        </computer>
+      
+        <!-- All test machines must be defined by a computer tag -->
+        <computer hostname="TestVM2" timeout="700" >
+            <env_var name="CONFIG_FILE" value=".\conf\TestVM2.conf" />
+        </computer>
+
+    </platform>
+</ntest_controller>

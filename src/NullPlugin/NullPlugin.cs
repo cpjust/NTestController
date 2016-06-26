@@ -28,9 +28,8 @@ namespace NullPlugin
                     plugin = new NullTestReporterPlugin(xmlConfig);
                     break;
                 default:
-                    throw new ArgumentException(
-                        "{0} must be one of the following: TestReader, EnvSetup, TestExecutor, EnvCleanup, TestReporter.",
-                        nameof(xmlConfig));
+                    plugin = new NullTestReaderPlugin(xmlConfig);
+                    break;
             }
 
             return plugin;
