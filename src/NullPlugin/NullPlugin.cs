@@ -1,6 +1,4 @@
-﻿using System;
-using NTestController;
-using Utilities;
+﻿using NTestController;
 
 namespace NullPlugin
 {
@@ -38,19 +36,17 @@ namespace NullPlugin
 
     public abstract class NullPluginBase : IPlugin
     {
-        protected string _name = null;
-        protected PluginType _pluginType;
         private string _xmlConfig = null;
 
-        public NullPluginBase(string xmlConfig)
+        protected NullPluginBase(string xmlConfig)
         {
             _xmlConfig = xmlConfig;
         }
 
         #region Implements IPlugin
 
-        public string Name { get; }
-        public PluginType PluginType { get; }
+        public string Name { get; internal set; }
+        public PluginType PluginType { get; internal set; }
 
         public bool Execute()
         {
@@ -65,8 +61,8 @@ namespace NullPlugin
         public NullTestReaderPlugin(string xmlConfig)
             : base(xmlConfig)
         {
-            _name = "TestReader";
-            _pluginType = PluginType.TestReader;
+            Name = "TestReader";
+            PluginType = PluginType.TestReader;
         }
     }
 
@@ -75,8 +71,8 @@ namespace NullPlugin
         public NullEnvSetupPlugin(string xmlConfig)
             : base(xmlConfig)
         {
-            _name = "EnvSetup";
-            _pluginType = PluginType.EnvSetup;
+            Name = "EnvSetup";
+            PluginType = PluginType.EnvSetup;
         }
     }
 
@@ -85,8 +81,8 @@ namespace NullPlugin
         public NullTestExecutorPlugin(string xmlConfig)
             : base(xmlConfig)
         {
-            _name = "TestExecutor";
-            _pluginType = PluginType.TestExecutor;
+            Name = "TestExecutor";
+            PluginType = PluginType.TestExecutor;
         }
     }
 
@@ -95,8 +91,8 @@ namespace NullPlugin
         public NullEnvCleanupPlugin(string xmlConfig)
             : base(xmlConfig)
         {
-            _name = "EnvCleanup";
-            _pluginType = PluginType.EnvCleanup;
+            Name = "EnvCleanup";
+            PluginType = PluginType.EnvCleanup;
         }
     }
 
@@ -105,8 +101,8 @@ namespace NullPlugin
         public NullTestReporterPlugin(string xmlConfig)
             : base(xmlConfig)
         {
-            _name = "TestReporter";
-            _pluginType = PluginType.TestReporter;
+            Name = "TestReporter";
+            PluginType = PluginType.TestReporter;
         }
     }
 }

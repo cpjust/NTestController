@@ -9,12 +9,12 @@ namespace UtilitiesTests
     {
         [TestCase("Testing 1, 2, 3", "Testing {0}, {1}, {2}", 1, 2, 3)]
         [TestCase("Mixed Types: 1, Two, 3.14, True", "Mixed Types: {0}, {1}, {2}, {3}", 1, "Two", 3.14, true)]
-        public static void FormatInvariant_ValidArgs_ProducesCorrectStrings(string expectedString, string format, params Object[] args)
+        public static void FormatInvariant_ValidArgs_ProducesCorrectStrings(string expectedValue, string format, params Object[] args)
         {
             string result = StringUtils.FormatInvariant(format, args);
 
-            Assert.AreEqual(expectedString, result, "format string: '{0}' with args: '{1}' should produce: '{2}', but it returned: '{3}'",
-                format, string.Join(", ", args), expectedString, result);
+            Assert.AreEqual(expectedValue, result, "format string: '{0}' with args: '{1}' should produce: '{2}', but it returned: '{3}'",
+                format, string.Join(", ", args), expectedValue, result);
         }
 
         [TestCase("{0} {1}", null)]

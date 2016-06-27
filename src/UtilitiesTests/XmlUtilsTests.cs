@@ -26,7 +26,7 @@ namespace UtilitiesTests
         }
 
         [TestCase]
-        public static void GetXmlAttribute_NonExistentAttribute_Exception()
+        public static void GetXmlAttribute_NonExistentAttribute_XmlException()
         {
             const string attrName = "myAttr";
             const string attrValue = "myValue";
@@ -36,11 +36,11 @@ namespace UtilitiesTests
             doc.LoadXml(xmlString);
             XmlNode node = doc.FirstChild;
 
-            Assert.Throws<ArgumentException>(() =>
+            Assert.Throws<XmlException>(() =>
             {
                 XmlUtils.GetXmlAttribute(node, "foo");
             }, "{0}.{1}() should throw a {2} if passed an attributeName argument that doesn't exist in the XmlNode!",
-                nameof(XmlUtils), nameof(XmlUtils.GetXmlAttribute), nameof(ArgumentException));
+                nameof(XmlUtils), nameof(XmlUtils.GetXmlAttribute), nameof(XmlException));
         }
         
         [TestCase]
