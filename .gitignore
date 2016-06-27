@@ -197,3 +197,5 @@ doc/*.git
 doc/*.bmp
 doc/*.svg
 doc/*.tif
+
+*.doc#

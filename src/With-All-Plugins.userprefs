@@ -1,32 +1,37 @@
 ﻿<Properties StartupItem="NTestController/NTestController.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="NTestControllerTests/PluginFactoryTests.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Tests/LoggerTests/LoggerTests.cs">
     <Files>
-      <File FileName="Plugins/NUnit-Reader/NUnitReader.cs" Line="1" Column="1" />
+      <File FileName="Plugins/NUnit-Reader/NUnitReader.cs" Line="13" Column="73" />
+      <File FileName="NTestController/Factories/ComputerFactory.cs" Line="1" Column="1" />
       <File FileName="Plugins/NUnit-Reader/PlatformFactory.cs" Line="1" Column="1" />
       <File FileName="NTestController/Factories/PlatformFactory.cs" Line="1" Column="1" />
-      <File FileName="NTestController/NTestController.cs" Line="1" Column="1" />
+      <File FileName="NTestController/NTestController.cs" Line="77" Column="35" />
       <File FileName="Logger/ILogger.cs" Line="1" Column="1" />
       <File FileName="Logger/BaseLogger.cs" Line="1" Column="1" />
       <File FileName="Logger/ConsoleLogger.cs" Line="1" Column="1" />
-      <File FileName="LoggerTests/LoggerTests.cs" Line="1" Column="1" />
       <File FileName="Utilities/ThrowIf.cs" Line="1" Column="1" />
-      <File FileName="NTestController/IPlugin.cs" Line="1" Column="1" />
-      <File FileName="NTestController/Factories/PluginFactory.cs" Line="1" Column="1" />
-      <File FileName="Utilities/StringUtils.cs" Line="1" Column="1" />
+      <File FileName="NTestController/IPlugin.cs" Line="18" Column="9" />
+      <File FileName="NTestController/Factories/PluginFactory.cs" Line="9" Column="5" />
       <File FileName="NullPlugin/NullPlugin.cs" Line="1" Column="1" />
-      <File FileName="Utilities/XmlUtils.cs" Line="1" Column="1" />
-      <File FileName="NTestControllerTests/PluginFactoryTests.cs" Line="56" Column="1" />
+      <File FileName="Utilities/XmlUtils.cs" Line="14" Column="42" />
+      <File FileName="NTestControllerTests/PluginFactoryTests.cs" Line="180" Column="35" />
+      <File FileName="Plugins/NUnit-Reader/PluginFactory.cs" Line="15" Column="1" />
+      <File FileName="Tests/LoggerTests/LoggerTests.cs" Line="74" Column="58" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State name="__root__">
-          <Node name="With-All-Plugins" expanded="True" selected="True">
+          <Node name="With-All-Plugins" expanded="True">
+            <Node name="Tests" expanded="True">
+              <Node name="LoggerTests" expanded="True" selected="True" />
+            </Node>
             <Node name="NTestController" expanded="True">
               <Node name="Factories" expanded="True" />
             </Node>
             <Node name="NTestControllerTests" expanded="True" />
             <Node name="NullPlugin" expanded="True" />
+            <Node name="NUnit-Reader" expanded="True" />
             <Node name="Utilities" expanded="True" />
             <Node name="UtilitiesTests" expanded="True" />
           </Node>
@@ -34,10 +39,16 @@
       </Pad>
       <Pad Id="MonoDevelop.NUnit.TestPad">
         <State name="__root__">
-          <Node name="With-All-Plugins" expanded="True" selected="True">
-            <Node name="NTestControllerTests" expanded="True">
-              <Node name="NTestControllerTests" expanded="True">
-                <Node name="PluginFactoryTests" expanded="True" />
+          <Node name="With-All-Plugins" expanded="True">
+            <Node name="Tests" expanded="True">
+              <Node name="LoggerTests" expanded="True">
+                <Node name="LoggerTests" expanded="True">
+                  <Node name="TestsForLogger" expanded="True">
+                    <Node name="ShouldWrite_TrueIfLevelMatches" expanded="True">
+                      <Node name="ShouldWrite_TrueIfLevelMatches(DEBUG)" selected="True" />
+                    </Node>
+                  </Node>
+                </Node>
               </Node>
             </Node>
           </Node>
