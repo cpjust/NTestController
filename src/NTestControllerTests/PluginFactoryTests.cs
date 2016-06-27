@@ -149,7 +149,6 @@ namespace NTestControllerTests
         }
 
         [TestCase]
-        [Ignore("This should work once the NUnit-Reader plugin is implemented.")]   // TODO: remove this when NUnit-Reader plugin is working.
         public void GetPlugin_WrongPluginType_TypeLoadException()
         {
             XmlDocument doc = new XmlDocument();
