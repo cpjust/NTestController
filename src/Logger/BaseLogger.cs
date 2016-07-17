@@ -18,6 +18,8 @@ namespace Logger
         private readonly object _lock = new object();
         private SemaphoreSlim _semaphore = new SemaphoreSlim(1);
 
+        private static VerboseLevel _logLevel = VerboseLevel.TRACE;
+
         #region Private Methods
 
         /// <summary>
@@ -172,7 +174,11 @@ namespace Logger
         /// <summary>
         /// Get/set the level of info to display in the log.
         /// </summary>
-        public VerboseLevel LogLevel { get; set; }
+        public VerboseLevel LogLevel
+        {
+            get { return _logLevel; }
+            set { _logLevel = value; }
+        }
 
         /// <summary>
         /// Prints a message to standard error only if the log level is Error,
