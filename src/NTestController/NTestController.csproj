@@ -46,6 +46,7 @@
     <Compile Include="NTestController.cs" />
     <Compile Include="IPlugin.cs" />
     <Compile Include="Factories\PluginFactory.cs" />
+    <Compile Include="TestQueue.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
