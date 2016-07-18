@@ -84,8 +84,7 @@ namespace NTestControllerTests
 
             for (int i = 0; i < numberOfTests; ++i)
             {
-                Test test = new Test
-                {
+                Test test = new Test {
                     TestName = StringUtils.FormatInvariant("Namespace{0}.Class{0}.Function{0}", i)
                 };
 
@@ -125,7 +124,48 @@ namespace NTestControllerTests
                 numberOfTests, numberOfTestsDequeued);
         }
 
-        // TODO: Add tests for TestQueue.AddCompletedTest() and TestQueue.CompletedTests.
+        [TestCase]
+        public void AddCompletedTest_NullTest_NullArgumentException()
+        {
+            Assert.Throws<ArgumentNullException>(() => _testqueue.AddCompletedTest(null),
+                "{0}.{1}() should throw an ArgumentNullException if you pass it a null test!",
+                nameof(TestQueue), nameof(TestQueue.AddCompletedTest));
+        }
+
+        [TestCase(0)]
+        [TestCase(1)]
+        [TestCase(10)]
+        public void AddCompletedTest_ValidTests_HasCompletedTests(int numberOfTests)
+        {
+            // Setup:
+            IList<Test> tests = new List<Test>();
+
+            for (int i = 0; i < numberOfTests; ++i)
+            {
+                Test test = new Test {
+                    TestName = StringUtils.FormatInvariant("Namespace{0}.Class{0}.Function{0}", i)
+                };
+
+                tests.Add(test);
+
+                // Execute:
+                Assert.DoesNotThrow(() => _testqueue.AddCompletedTest(test),
+                    "{0}.{1}() shouldn't throw an exception when adding a valid test!",
+                    nameof(TestQueue), nameof(TestQueue.AddCompletedTest));
+            }
+
+            // Verify:
+            Assert.AreEqual(tests.Count, _testqueue.CompletedTests.Count,
+                "{0}.{1} should equal the number of tests added (i.e. '{2}')!",
+                nameof(TestQueue), nameof(TestQueue.CompletedTests), tests.Count);
+
+            foreach (Test test in _testqueue.CompletedTests)
+            {
+                Assert.That(tests.Contains(test),
+                    "Test '{0}' was not found in {1}.{2}!",
+                    test.TestName,nameof(TestQueue), nameof(TestQueue.CompletedTests));
+            }
+        }
 
 
         /// <summary>
