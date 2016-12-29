@@ -14,12 +14,20 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NullPlugin", "NullPlugin\NullPlugin.csproj", "{B547D38A-75A1-43C5-9D6A-75FB1F4A5039}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{26D0C4B3-0F49-4A1F-87B4-994B9E695801}"
+	ProjectSection(SolutionItems) = preProject
+		Tests\NUnit-Input-SAMPLE.csv = Tests\NUnit-Input-SAMPLE.csv
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoggerTests", "Tests\LoggerTests\LoggerTests.csproj", "{3609C77A-0949-4765-9632-EB16651A87DA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NTestControllerTests", "Tests\NTestControllerTests\NTestControllerTests.csproj", "{B34AC523-6DC3-4D5B-87C2-66BB939ECC54}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UtilitiesTests", "Tests\UtilitiesTests\UtilitiesTests.csproj", "{5B54999B-54F8-49AF-A766-33765AD3DF4D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6A3927D8-6B0B-44D6-862E-DBFCA5F7D928}"
+	ProjectSection(SolutionItems) = preProject
+		NTestController-SAMPLE.xml = NTestController-SAMPLE.xml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,9 +1,9 @@
 <ntest_controller>
     <plugins>
         <plugin type="TestReader"   path="C:\NTestController\plugins\NUnit-Reader.dll" />
-        <plugin type="EnvSetup"      path="C:\NTestController\plugins\Null-Setup.dll" />
+        <plugin type="EnvSetup"     path="C:\NTestController\plugins\Null-Setup.dll" />
         <plugin type="TestExecutor" path="C:\NTestController\plugins\NUnit-Executor.dll" />
-        <plugin type="EnvCleanup"  path="C:\NTestController\plugins\Null-Cleanup.dll" />
+        <plugin type="EnvCleanup"   path="C:\NTestController\plugins\Null-Cleanup.dll" />
         <plugin type="TestReporter" path="C:\NTestController\plugins\NUnit-Reporter.dll" />
     </plugins>
 
