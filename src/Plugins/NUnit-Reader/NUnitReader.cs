@@ -11,7 +11,8 @@ namespace NUnitReader
     public class NUnitReaderPlugin : IPlugin
     {
         private string _testInputFile;
-        private List<NUnitTest> _tests = new List<NUnitTest>();
+
+        public List<NUnitTest> Tests { get; } = new List<NUnitTest>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NUnitReader.NUnitReaderPlugin"/> class.
@@ -22,8 +23,6 @@ namespace NUnitReader
             ThrowIf.StringIsNullOrWhiteSpace(testInputFile, nameof(testInputFile));
 
             _testInputFile = testInputFile;
-
-            ParseTestInputFile(_testInputFile);
         }
 
         #region Inherited from IPlugin
@@ -31,30 +30,29 @@ namespace NUnitReader
         public string Name { get { return nameof(NUnitReader); } }
         public PluginType PluginType { get { return PluginType.TestReader; } }
 
-        /// <summary>
-        /// Execute this plugin instance.
-        /// </summary>
+        /// <seealso cref="IPlugin.Execute()"/>
         public bool Execute()
         {
-            throw new NotImplementedException();
+            // Read input file and add to Tests.
+            if (!File.Exists(_testInputFile))
+            {
+                throw new FileNotFoundException(string.Format("Couldn't find file: {0}", _testInputFile));
+            }
+
+            var fileLines = File.ReadAllLines(_testInputFile);
+
+            ParseTestInputFile(fileLines);
+            return true;
         }
 
         #endregion Inherited from IPlugin
 
         /// <summary>
-        /// Parses the test input file into a list of TestInput objects.
+        /// Parses the test input file into a list of NUnitTest objects.
         /// </summary>
-        /// <param name="testInputFile">Test input file.</param>
-        private void ParseTestInputFile(string testInputFile)
+        /// <param name="fileLines">An array of lines from the test input file.</param>
+        private void ParseTestInputFile(string[] fileLines)
         {
-            // Read input file and add to _tests.
-            if (!File.Exists(testInputFile))
-            {
-                throw new FileNotFoundException(string.Format("Couldn't find file: {0}", testInputFile));
-            }
-
-            var fileLines = File.ReadAllLines(testInputFile);
-
             foreach (string fileLine in fileLines)
             {
                 string line = fileLine.Trim();
@@ -75,7 +73,7 @@ namespace NUnitReader
 
                 var testInput = new NUnitTest(lineParts[0], lineParts[1]);
 
-                _tests.Add(testInput);
+                Tests.Add(testInput);
             }
         }
     }
