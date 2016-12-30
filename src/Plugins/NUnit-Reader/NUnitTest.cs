@@ -1,14 +1,16 @@
 ﻿using System;
 using Utilities;
+using NTestController;
 
 namespace NUnitReader
 {
-    public class TestInput
+    public class NUnitTest : Test
     {
         private string _testFullName;
 
         public string DllPath;
-        public string TestFullName
+
+        public override string TestName
         {
             get { return _testFullName; }
             set
@@ -18,20 +20,16 @@ namespace NUnitReader
             }
         }
 
-        public string TestNamespace;
-        public string TestClass;
-        public string TestFunction;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="NUnitReader.TestInput"/> class.
         /// </summary>
         /// <param name="dllPath">The path to the DLL.</param>
         /// <param name="fullTestName">Fully qualified test name
         ///     (either 'namespace' or 'namespace.class' or 'namespace.class.function'.</param>
-        public TestInput(string dllPath, string fullTestName)
+        public NUnitTest(string dllPath, string fullTestName)
         {
             DllPath = dllPath;
-            TestFullName = fullTestName;
+            TestName = fullTestName;
         }
 
         #region Private functions

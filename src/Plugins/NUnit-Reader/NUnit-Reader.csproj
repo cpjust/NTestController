@@ -65,7 +65,7 @@
     <Compile Include="NUnitReader.cs" />
     <Compile Include="PlatformFactory.cs" />
     <Compile Include="PluginFactory.cs" />
-    <Compile Include="TestInput.cs" />
+    <Compile Include="NUnitTest.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

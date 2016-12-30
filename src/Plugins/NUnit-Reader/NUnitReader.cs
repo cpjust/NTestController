@@ -11,7 +11,7 @@ namespace NUnitReader
     public class NUnitReaderPlugin : IPlugin
     {
         private string _testInputFile;
-        private List<TestInput> _tests = new List<TestInput>();
+        private List<NUnitTest> _tests = new List<NUnitTest>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NUnitReader.NUnitReaderPlugin"/> class.
@@ -73,7 +73,7 @@ namespace NUnitReader
                         string.Format("Expected 2 parts ('|' separated) but found {0} parts!", lineParts.Length));
                 }
 
-                var testInput = new TestInput(lineParts[0], lineParts[1]);
+                var testInput = new NUnitTest(lineParts[0], lineParts[1]);
 
                 _tests.Add(testInput);
             }

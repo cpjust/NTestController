@@ -60,7 +60,7 @@ namespace NTestController
         private string _testName = null;
 
         /// <summary>The fully qualified name of the test (ex. namespace.class.function).</summary>
-        public string TestName
+        public virtual string TestName
         {
             get
             {
