@@ -199,3 +199,6 @@ doc/*.svg
 doc/*.tif
 
 *.doc#
+
+# Exclude NUnit files.
+*.nunit

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{72BC56C5-471E-44D2-BD14-6F81F3F083B5}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>NUnitReaderTests</RootNamespace>
+    <AssemblyName>NUnit-ReaderTests</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\..\bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <Optimize>true</Optimize>
+    <OutputPath>..\..\bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="nunit.framework">
+      <HintPath>..\..\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
+    </Reference>
+    <Reference Include="nunit-console-runner, Version=2.6.3.0, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77">
+      <Package>nunit</Package>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="NUnitReaderPluginTests.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Utilities\Utilities.csproj">
+      <Project>{FA9DC35C-2A8B-4AD6-B961-A2E6EF1F6E4A}</Project>
+      <Name>Utilities</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Plugins\NUnit-Reader\NUnit-Reader.csproj">
+      <Project>{759E5046-6F57-48A0-A55C-DA296F946D08}</Project>
+      <Name>NUnit-Reader</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\NTestController\NTestController.csproj">
+      <Project>{1E2BD695-E014-4D56-9147-9C00BABD8216}</Project>
+      <Name>NTestController</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Logger\Logger.csproj">
+      <Project>{87A13F32-F014-4F67-BCD3-7CAFA80A27CD}</Project>
+      <Name>Logger</Name>
+    </ProjectReference>
+  </ItemGroup>
+</Project>

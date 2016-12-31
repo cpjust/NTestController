@@ -12,7 +12,7 @@ namespace NUnitReader
     {
         private string _testInputFile;
 
-        public List<NUnitTest> Tests { get; } = new List<NUnitTest>();
+        public List<Test> Tests { get; } = new List<Test>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NUnitReader.NUnitReaderPlugin"/> class.
