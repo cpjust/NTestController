@@ -202,3 +202,4 @@ doc/*.tif
 
 # Exclude NUnit files.
 *.nunit
+*.VisualState.xml
