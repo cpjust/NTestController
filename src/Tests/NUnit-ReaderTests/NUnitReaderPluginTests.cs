@@ -64,6 +64,49 @@ namespace NUnitReaderTests
                 "There should be {0} tests in the file!", expectedNumberOfTests);
         }
 
+        [TestCase("C:\\Folder1\\Test.dll", "TestNamespace1", null, null)]
+        [TestCase("/home/testuser/Test.dll", "TestNamespace1", null, null)]
+        [TestCase("Test.dll", "TestNamespace1", null, null)]
+        [TestCase("Test.dll", "TestNamespace1", "TestClass1", null)]
+        [TestCase("Test.dll", "TestNamespace1", "TestClass1", "TestFunction1()")]
+        [TestCase("Test.dll", "TestNamespace1", "TestClass1.TestClass2", null)]
+        [TestCase("Test.dll", "TestNamespace1", "TestClass1.TestClass2", "TestFunction1()")]
+        [TestCase("Test.dll", "TestNamespace1", "TestClass1", "TestFunction1(3.14, \"pi\")")]
+        [TestCase("Test.dll", "TestNamespace1", "TestClass1", "TestFunction1(\"left | right\")")]
+        public void Execute_DifferentTestFormats_TestsAreAdded(
+            string testDll, string testNamespace, string testClass, string testFunction)
+        {
+            // Setup:
+            string testName = CreateFullTestName(testNamespace, testClass, testFunction);
+            string line = StringUtils.FormatInvariant("{0} | {1}", testDll, testName);
+
+            // Create a file with the specified line of text.
+            _filename = FileUtilities.CreateTempFile();
+            FileUtilities.AppendLineToFile(_filename, line);
+
+            var plugin = new NUnitReaderPlugin(_filename);
+
+            // Execute:
+            Assert.IsTrue(plugin.Execute(), "{0} should return true!", EXECUTE_FUNC);
+
+            // Verify:
+            Assert.AreEqual(1, plugin.Tests.Count, "There should be 1 test in the file!");
+            var test = plugin.Tests[0];
+
+            // These should have the values we set.
+            Assert.AreEqual(testNamespace, test.TestNamespace, "Test.TestNamespace doesn't have the expected value!");
+            Assert.AreEqual(testClass, test.TestClass, "Test.TestClass doesn't have the expected value!");
+            Assert.AreEqual(testFunction, test.TestFunction, "Test.TestFunction doesn't have the expected value!");
+            Assert.AreEqual(testName, test.TestName, "Test.TestName doesn't have the expected value!");
+
+            var nunitTest = test as NUnitTest;
+            Assert.AreEqual(testDll, nunitTest.DllPath, "NUnitTest.DllPath doesn't have the expected value!");
+
+            // These shouldn't have any values in them.
+            Assert.AreEqual(0, test.ExtendedProperties.Count, "Test.ExtendedProperties should be empty!");
+            Assert.AreEqual(0, test.TestRuns.Count, "Test.TestRuns should be empty!");
+        }
+
         #endregion Success Tests
 
         #region Error Tests
@@ -98,6 +141,25 @@ namespace NUnitReaderTests
         }
 
         #endregion Error Tests
+
+        #region Private Functions
+
+        /// <summary>
+        /// Creates the full name of the test.
+        /// </summary>
+        /// <param name="testNamespace">Test namespace.</param>
+        /// <param name="testClass">Test class.</param>
+        /// <param name="testFunction">Test function.</param>
+        /// <returns>The full test name.</returns>
+        private string CreateFullTestName(string testNamespace, string testClass, string testFunction)
+        {
+            // Setup:
+            string testName = StringUtils.FormatInvariant("{0}.{1}.{2}",
+                                  testNamespace, testClass ?? string.Empty, testFunction ?? string.Empty);
+            return testName.TrimEnd('.');
+        }
+
+        #endregion Private Functions
     }
 }
 

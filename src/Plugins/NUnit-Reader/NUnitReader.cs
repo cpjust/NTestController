@@ -71,7 +71,7 @@ namespace NUnitReader
                         string.Format("Expected 2 parts ('|' separated) but found {0} parts!", lineParts.Length));
                 }
 
-                var testInput = new NUnitTest(lineParts[0], lineParts[1]);
+                var testInput = new NUnitTest(lineParts[0].Trim(), lineParts[1].Trim());
 
                 Tests.Add(testInput);
             }

@@ -7,9 +7,9 @@
 "/home/cjust/git-repos/NTestController/src/bin/Debug/UtilitiesTests.dll"        | UtilitiesTests.ThrowIfTests
 
 # These have function names.
-"/home/cjust/git-repos/NTestController/src/bin/Debug/UtilitiesTests.dll"        | UtilitiesTests.XmlUtilsTests.GetXmlAttribute_ValidArgs_ValueIsReturned
-"/home/cjust/git-repos/NTestController/src/bin/Debug/UtilitiesTests.dll"        | UtilitiesTests.XmlUtilsTests.GetXmlAttribute_NonExistentAttribute_XmlException
-"/home/cjust/git-repos/NTestController/src/bin/Debug/UtilitiesTests.dll"        | UtilitiesTests.XmlUtilsTests.GetXmlAttribute_NullXmlNode_ArgumentNullException
+"/home/cjust/git-repos/NTestController/src/bin/Debug/UtilitiesTests.dll"        | UtilitiesTests.XmlUtilsTests.GetXmlAttribute_ValidArgs_ValueIsReturned()
+"/home/cjust/git-repos/NTestController/src/bin/Debug/UtilitiesTests.dll"        | UtilitiesTests.XmlUtilsTests.GetXmlAttribute_NonExistentAttribute_XmlException()
+"/home/cjust/git-repos/NTestController/src/bin/Debug/UtilitiesTests.dll"        | UtilitiesTests.XmlUtilsTests.GetXmlAttribute_NullXmlNode_ArgumentNullException()
 
 # These have functions and parameters.
 "/home/cjust/git-repos/NTestController/src/bin/Debug/UtilitiesTests.dll"        | UtilitiesTests.XmlUtilsTests.GetXmlAttribute_NullOrWhiteSpaceStringArg_ArgumentNullException()

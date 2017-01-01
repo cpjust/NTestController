@@ -1,11 +1,13 @@
 ﻿using System;
 using Utilities;
 using NTestController;
+using Logger;
 
 namespace NUnitReader
 {
     public class NUnitTest : Test
     {
+        private ILogger Logger { get; } = ConsoleLogger.Instance;
         private string _testFullName;
 
         public string DllPath;
@@ -49,7 +51,6 @@ namespace NUnitReader
             if (nameParts.Length > 1)
             {
                 // Find the last part that isn't the test function name.
-                // If the test name has parameters, it will contain a parentheses.
                 int testNameIndex;
 
                 for (testNameIndex = 1; testNameIndex < nameParts.Length; ++testNameIndex)
@@ -60,12 +61,18 @@ namespace NUnitReader
                     }
                 }
 
+                Logger.WriteDebug("testName = {0}", testName);
+                Logger.WriteDebug("nameParts.Length = {0}", nameParts.Length);
+                Logger.WriteDebug("testNameIndex = {0}", testNameIndex);
+
                 TestClass = string.Join(".", nameParts, startIndex: 1, count: testNameIndex - 1);
+                Logger.WriteDebug("TestClass = {0}", TestClass);
 
                 // Everything else must be the test function name (and any parameters).
-                if (nameParts.Length > 2)
+                if ((nameParts.Length > 2) && (testNameIndex < nameParts.Length))
                 {
-                    TestFunction = string.Join("", nameParts, startIndex: testNameIndex, count: nameParts.Length - testNameIndex);
+                    TestFunction = string.Join(".", nameParts, startIndex: testNameIndex, count: nameParts.Length - testNameIndex);
+                    Logger.WriteDebug("TestFunction = {0}", TestFunction);
                 }
             }
         }
