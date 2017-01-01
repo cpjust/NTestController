@@ -4,6 +4,7 @@ using Utilities;
 using System.IO;
 using NUnitReader;
 using Logger;
+using NTestController;
 
 namespace NUnitReaderTests
 {
@@ -41,6 +42,34 @@ namespace NUnitReaderTests
 
             // Verify:
             Assert.AreEqual(0, plugin.Tests.Count, "There should be no tests in a blank file!");
+        }
+
+        [TestCase]
+        public void Execute_NameProperty_HasCorrectValue()
+        {
+            // Setup:
+            // Create an empty file.
+            _filename = FileUtilities.CreateTempFile();
+
+            var plugin = new NUnitReaderPlugin(_filename);
+
+            // Execute & Verify:
+            string expectedName = "NUnitReader";
+            Assert.AreEqual(expectedName, plugin.Name, "The NUnitReaderPlugin.Name property should equal {0}!", expectedName);
+        }
+
+        [TestCase]
+        public void Execute_PluginTypeProperty_HasCorrectValue()
+        {
+            // Setup:
+            // Create an empty file.
+            _filename = FileUtilities.CreateTempFile();
+
+            var plugin = new NUnitReaderPlugin(_filename);
+
+            // Execute & Verify:
+            var expectedType = PluginType.TestReader;
+            Assert.AreEqual(expectedType, plugin.PluginType, "The NUnitReaderPlugin.PluginType property should equal {0}!", expectedType);
         }
 
         [TestCase(1, "Test.dll | Test1")]
