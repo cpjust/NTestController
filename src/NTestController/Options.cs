@@ -8,7 +8,7 @@ namespace NTestController
     /// <summary>
     /// Contains a list of all command line options, with their associated help text.
     /// </summary>
-    public sealed class Options
+    public sealed class Options : IReadOnlyOptions
     {
         // Required parameters:
         [Option('c', "config", MetaValue = "FILE", Required = true,
@@ -49,6 +49,15 @@ namespace NTestController
         public string GetUsage()
         {
             return HelpText.AutoBuild(this, current => HelpText.DefaultParsingErrorsHandler(this, current));
+        }
+
+        /// <summary>
+        /// Gets a read only interface to this object.
+        /// </summary>
+        /// <returns>A read only version of this object.</returns>
+        public IReadOnlyOptions GetAsReadOnly()
+        {
+            return this as IReadOnlyOptions;
         }
     }
 }
