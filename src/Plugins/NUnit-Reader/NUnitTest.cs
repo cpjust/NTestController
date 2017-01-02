@@ -10,28 +10,25 @@ namespace NUnitReader
         private ILogger Logger { get; } = ConsoleLogger.Instance;
         private string _testFullName;
 
-        public string DllPath;
+        public string DllPath { get; set; }
 
         public override string TestName
         {
             get { return _testFullName; }
-            set
-            {
-                _testFullName = value;
-                ParseTestName(value);
-            }
+            set { SetTestName(value); }
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="NUnitReader.TestInput"/> class.
+        /// Initializes a new instance of the <see cref="NUnitReader.NUnitTest"/> class.
         /// </summary>
         /// <param name="dllPath">The path to the DLL.</param>
         /// <param name="fullTestName">Fully qualified test name
         ///     (either 'namespace' or 'namespace.class' or 'namespace.class.function'.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public NUnitTest(string dllPath, string fullTestName)
         {
             DllPath = dllPath;
-            TestName = fullTestName;
+            SetTestName(fullTestName);
         }
 
         #region Private functions
@@ -75,6 +72,16 @@ namespace NUnitReader
                     Logger.WriteDebug("TestFunction = {0}", TestFunction);
                 }
             }
+        }
+
+        /// <summary>
+        /// Sets the test name and parses it into namespace, class and function.
+        /// </summary>
+        /// <param name="testName">The full test name.</param>
+        private void SetTestName(string testName)
+        {
+            _testFullName = testName;
+            ParseTestName(testName);
         }
 
         #endregion Private functions

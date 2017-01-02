@@ -173,7 +173,7 @@ namespace NTestControllerTests
         /// </summary>
         /// <param name="test1">First test to compare.</param>
         /// <param name="test2">Second test to compare.</param>
-        private void AssertTestsAreEqual(Test test1, Test test2)
+        private static void AssertTestsAreEqual(Test test1, Test test2)
         {
             Assert.AreEqual(test1.TestNamespace, test2.TestNamespace,
                 "TestNamespace of test1 doesn't match test2!");

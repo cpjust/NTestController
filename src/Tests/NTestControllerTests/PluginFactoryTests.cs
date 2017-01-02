@@ -8,7 +8,7 @@ using Utilities;
 namespace NTestControllerTests
 {
     [TestFixture]
-    public class PluginFactoryTests
+    public static class PluginFactoryTests
     {
         #region Test Data
 
@@ -50,7 +50,7 @@ namespace NTestControllerTests
         [TestCase(" ", "NTestController.xml")]
         [TestCase("\t", "NTestController.xml")]
         [TestCase("\n", "NTestController.xml")]
-        public void LoadPlugin_NullOrWhiteSpaceArgs_ArgumentNullException(string dllFile, string xmlConfig)
+        public static void LoadPlugin_NullOrWhiteSpaceArgs_ArgumentNullException(string dllFile, string xmlConfig)
         {
             Assert.Throws<ArgumentNullException>(() =>
             {
@@ -60,7 +60,7 @@ namespace NTestControllerTests
         }
 
         [TestCase]
-        public void LoadPlugin_MissingDll_DllNotFoundException()
+        public static void LoadPlugin_MissingDll_DllNotFoundException()
         {
             Assert.Throws<DllNotFoundException>(() =>
             {
@@ -70,7 +70,7 @@ namespace NTestControllerTests
         }
 
         [TestCase]
-        public void LoadPlugin_ValidArgs_ReturnsIPlugin()
+        public static void LoadPlugin_ValidArgs_ReturnsIPlugin()
         {
             IPlugin plugin = null;
 
@@ -85,7 +85,7 @@ namespace NTestControllerTests
         }
 
         [TestCase]
-        public void LoadPlugin_DllDoesNotImplementIPlugin_EntryPointNotFoundException()
+        public static void LoadPlugin_DllDoesNotImplementIPlugin_EntryPointNotFoundException()
         {
             Assert.Throws<EntryPointNotFoundException>(() =>
             {
@@ -103,7 +103,7 @@ namespace NTestControllerTests
         [TestCase(" ")]
         [TestCase("\t")]
         [TestCase("\n")]
-        public void GetPlugin_NullOrWhiteSpaceXmlConfig_ArgumentNullException(string xmlConfig)
+        public static void GetPlugin_NullOrWhiteSpaceXmlConfig_ArgumentNullException(string xmlConfig)
         {
             XmlDocument doc = new XmlDocument();
             doc.LoadXml("<plugin type=\"TestReader\" path=\"NullPlugin.dll\" />");
@@ -120,7 +120,7 @@ namespace NTestControllerTests
         [TestCase("")]
         [TestCase(" ")]
         [TestCase("InvalidPluginType")]
-        public void GetPlugin_InvalidPluginTypeInXmlConfig_ArgumentException(string xmlConfig)
+        public static void GetPlugin_InvalidPluginTypeInXmlConfig_ArgumentException(string xmlConfig)
         {
             XmlDocument doc = new XmlDocument();
             doc.LoadXml(StringUtils.FormatInvariant("<plugin type=\"{0}\" path=\"NullPlugin.dll\" />", xmlConfig));
@@ -135,7 +135,7 @@ namespace NTestControllerTests
 
         [TestCase("<plugin path=\"NullPlugin.dll\" />")]
         [TestCase("<plugin type=\"TestReader\" />")]
-        public void GetPlugin_InvalidXmlConfig_XmlException(string xmlConfig)
+        public static void GetPlugin_InvalidXmlConfig_XmlException(string xmlConfig)
         {
             XmlDocument doc = new XmlDocument();
             doc.LoadXml(xmlConfig);
@@ -149,7 +149,7 @@ namespace NTestControllerTests
         }
 
         [TestCase]
-        public void GetPlugin_WrongPluginType_TypeLoadException()
+        public static void GetPlugin_WrongPluginType_TypeLoadException()
         {
             XmlDocument doc = new XmlDocument();
             doc.LoadXml("<plugin type=\"TestReporter\" path=\"NUnit-Reader.dll\" />");
@@ -165,7 +165,7 @@ namespace NTestControllerTests
         }
 
         [TestCase]
-        public void GetPlugin_NullXmlNode_ArgumentNullException()
+        public static void GetPlugin_NullXmlNode_ArgumentNullException()
         {
             Assert.Throws<ArgumentNullException>(() =>
             {
@@ -175,7 +175,7 @@ namespace NTestControllerTests
         }
 
         [TestCase]
-        public void GetPlugin_ValidArgs_ReturnsIPlugin()
+        public static void GetPlugin_ValidArgs_ReturnsIPlugin()
         {
             IPlugin plugin = null;
             string xmlConfigPath = "GetPlugin_ValidArgs_ReturnsIPlugin.xml";

@@ -98,6 +98,7 @@ namespace NTestController
     /// <summary>
     /// A test queue to hold all of the tests to be run (or that completed).
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1711:IdentifiersShouldNotHaveIncorrectSuffix")] // This is a stupid rule.
     public class TestQueue
     {
         #region Member variables
