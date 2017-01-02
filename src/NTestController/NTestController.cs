@@ -99,6 +99,7 @@ namespace NTestController
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]   // Will need this later.
         private static XmlNode GetDefaultsXmlNode(string configFile)
         {
             try
@@ -116,6 +117,7 @@ namespace NTestController
             }
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]   // Will need this later.
         private static IList<IPlatform> GetPlatforms(string configFile, XmlNode defaultsNode)
         {
             var platforms = new List<IPlatform>();
