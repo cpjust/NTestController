@@ -141,7 +141,7 @@ namespace NUnitReaderTests
         #region Error Tests
 
         [TestCase]
-        public void Execute_NonExistentFile_FileNotFoundException()
+        public static void Execute_NonExistentFile_FileNotFoundException()
         {
             // Setup:
             var plugin = new NUnitReaderPlugin("ThisFileShouldNotExist");
@@ -180,7 +180,7 @@ namespace NUnitReaderTests
         /// <param name="testClass">Test class.</param>
         /// <param name="testFunction">Test function.</param>
         /// <returns>The full test name.</returns>
-        private string CreateFullTestName(string testNamespace, string testClass, string testFunction)
+        private static string CreateFullTestName(string testNamespace, string testClass, string testFunction)
         {
             // Setup:
             string testName = StringUtils.FormatInvariant("{0}.{1}.{2}",

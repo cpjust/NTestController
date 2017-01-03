@@ -55,6 +55,7 @@ namespace NTestController
         /// Gets a read only interface to this object.
         /// </summary>
         /// <returns>A read only version of this object.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate")]   // No, leave as a function.
         public IReadOnlyOptions GetAsReadOnly()
         {
             return this as IReadOnlyOptions;
