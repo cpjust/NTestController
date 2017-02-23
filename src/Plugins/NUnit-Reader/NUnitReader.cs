@@ -10,7 +10,7 @@ namespace NUnitReader
 {
     public class NUnitReaderPlugin : IReaderPlugin
     {
-        private string _testInputFile;
+        private readonly string _testInputFile;
 
         public List<Test> Tests { get; } = new List<Test>();
 
@@ -27,8 +27,8 @@ namespace NUnitReader
 
         #region Inherited from IPlugin
 
-        public string Name { get { return nameof(NUnitReader); } }
-        public PluginType PluginType { get { return PluginType.TestReader; } }
+        public string Name => nameof(NUnitReader);
+        public PluginType PluginType => PluginType.TestReader;
 
         /// <seealso cref="IPlugin.Execute()"/>
         public bool Execute()
@@ -36,7 +36,7 @@ namespace NUnitReader
             // Read input file and add to Tests.
             if (!File.Exists(_testInputFile))
             {
-                throw new FileNotFoundException(StringUtils.FormatInvariant("Couldn't find file: {0}", _testInputFile));
+                throw new FileNotFoundException("Couldn't find file: {0}".FormatInvariant(_testInputFile));
             }
 
             var fileLines = File.ReadAllLines(_testInputFile);
@@ -68,7 +68,7 @@ namespace NUnitReader
                 if (lineParts.Length != 2)
                 {
                     throw new InvalidDataException(
-                        StringUtils.FormatInvariant("Expected 2 parts ('|' separated) but found {0} parts!", lineParts.Length));
+                        "Expected 2 parts ('|' separated) but found {0} parts!".FormatInvariant(lineParts.Length));
                 }
 
                 var testInput = new NUnitTest(lineParts[0].Trim(), lineParts[1].Trim());
