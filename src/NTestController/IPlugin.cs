@@ -28,6 +28,11 @@ namespace NTestController
         List<Test> Tests { get; }
     }
 
+    public interface IReporterPlugin : IPlugin
+    {
+        TestQueue TestQueue { get; set; }
+    }
+
     public interface IExecutorPlugin : IPlugin
     {
         IComputer Computer { get; set; }

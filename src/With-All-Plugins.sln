@@ -33,7 +33,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NUnit-Executor", "NUnit-Executor\NUnit-Executor.csproj", "{C66476DF-DABB-4087-84B6-951371A69296}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NUnit-Reporter", "NUnit-Reporter\NUnit-Reporter.csproj", "{2F63FFCC-2569-44F6-9AF9-24CD962B1799}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NUnit-Reporter", "NUnit-Reporter2\NUnit-Reporter.csproj", "{F42D8164-9021-45B5-B053-43F21A8BB5E6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -81,10 +81,10 @@ Global
 		{C66476DF-DABB-4087-84B6-951371A69296}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C66476DF-DABB-4087-84B6-951371A69296}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C66476DF-DABB-4087-84B6-951371A69296}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2F63FFCC-2569-44F6-9AF9-24CD962B1799}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2F63FFCC-2569-44F6-9AF9-24CD962B1799}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2F63FFCC-2569-44F6-9AF9-24CD962B1799}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2F63FFCC-2569-44F6-9AF9-24CD962B1799}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F42D8164-9021-45B5-B053-43F21A8BB5E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F42D8164-9021-45B5-B053-43F21A8BB5E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F42D8164-9021-45B5-B053-43F21A8BB5E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F42D8164-9021-45B5-B053-43F21A8BB5E6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
