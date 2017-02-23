@@ -22,6 +22,18 @@ namespace NTestController
         bool Execute();
     }
 
+    public interface IExecutorPlugin : IPlugin
+    {
+        IComputer Computer { get; set; }
+        TestQueue TestQueue { get; set; }
+
+        /// <summary>
+        /// Clones this plugin.
+        /// </summary>
+        /// <returns>A copy of this plugin.</returns>
+        IExecutorPlugin ClonePlugin();
+    }
+
     public interface IPluginFactory
     {
         /// <summary>

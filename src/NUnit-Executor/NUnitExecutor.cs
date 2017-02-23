@@ -1,17 +1,15 @@
-﻿using System;
-using NTestController;
-using System.Collections.Generic;
+﻿using NTestController;
 using Utilities;
 
 namespace NUnitExecutor
 {
-    public class NUnitExecutorPlugin : IPlugin
+    public class NUnitExecutorPlugin : IExecutorPlugin
     {
         private IReadOnlyOptions _options;
-        private IComputer _computer;
-        private TestQueue _testQueue;
         private string _nunitPath;
         private string _xmlConfig;
+
+        #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NUnitExecutorPlugin"/> class.
@@ -38,31 +36,54 @@ namespace NUnitExecutor
             string nunitPath)
         {
             _options = options;
-            _computer = computer;
-            _testQueue = testQueue;
+            Computer = computer;
+            TestQueue = testQueue;
             _nunitPath = nunitPath;
         }
 
-        #region Inherited from IPlugin
+        #endregion Constructors
 
-        public string Name { get; }
-        public PluginType PluginType { get; }
+        #region Inherited from IExecutorPlugin
+
+        public string Name { get; private set; }
+
+        public PluginType PluginType
+        {
+            get { return PluginType.TestExecutor; }
+        }
+
+        public IComputer Computer { get; set; }
+        public TestQueue TestQueue { get; set; }
 
         /// <seealso cref="IPlugin.Execute()"/>
         public bool Execute()
         {
-            var test = _testQueue.DequeueTestToRun();
+            var test = TestQueue.DequeueTestToRun();
 
             while (test != null)
             {
                 RunTest(test);
-                test = _testQueue.DequeueTestToRun();
+                test = TestQueue.DequeueTestToRun();
             }
 
             return true;
         }
 
-        #endregion Inherited from IPlugin
+        /// <seealso cref="IExecutorPlugin.ClonePlugin()"/>
+        public IExecutorPlugin ClonePlugin()
+        {
+            var newPlugin = new NUnitExecutorPlugin(_xmlConfig);
+            newPlugin._options = _options;
+            newPlugin._nunitPath = _nunitPath;
+
+            newPlugin.Name = Name;
+            newPlugin.Computer = Computer;
+            newPlugin.TestQueue = TestQueue;
+
+            return newPlugin;
+        }
+
+        #endregion Inherited from IExecutorPlugin
 
         private void RunTest(Test test)
         {

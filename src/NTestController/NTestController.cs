@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml;
 using Logger;
 using NTestController.Factories;
+using Utilities;
 
 [assembly: CLSCompliant(true)]
 [assembly: System.Runtime.InteropServices.ComVisible(false)]
@@ -66,7 +69,8 @@ namespace NTestController
                     // Execute Setup plugin.
 
                     // Execute Test Executor plugin.
-
+                    var ExecutorPlugin = plugins[PluginType.TestExecutor] as IExecutorPlugin;
+                    ExecuteTests(ExecutorPlugin, platforms);
 
                     // Execute Cleanup plugin.
 
@@ -78,6 +82,33 @@ namespace NTestController
         #endregion Public functions
 
         #region Private functions
+
+        private static void ExecuteTests(IExecutorPlugin executorPlugin, List<IPlatform> platforms)
+        {
+            ThrowIf.ArgumentNull(executorPlugin, nameof(executorPlugin));
+            ThrowIf.ArgumentNull(platforms, nameof(platforms));
+
+            // Hack: For now just use a single Platform.  TODO: Use all Platforms later.
+            var firstPlatform = platforms[0];
+            var plugins = new List<IExecutorPlugin> { executorPlugin };
+
+            executorPlugin.Computer = firstPlatform.Computers[0];
+
+            // We already have one plugin, so add 1 less than Computers.Count.
+            for (int i = 1; i < firstPlatform.Computers.Count; ++i)
+            {
+                var newPlugin = executorPlugin.ClonePlugin();
+                newPlugin.Computer = firstPlatform.Computers[i];
+
+                plugins.Add(newPlugin);
+            }
+
+            // Run all plugins in parallel.
+            Parallel.ForEach(plugins, plugin =>
+            {
+                plugin.Execute();
+            });
+        }
 
         private static Dictionary<PluginType, IPlugin> GetPlugins(string configFile)
         {
@@ -120,7 +151,6 @@ namespace NTestController
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]   // Will need this later.
         private static XmlNode GetDefaultsXmlNode(XmlDocument xmlDoc)
         {
             try
@@ -135,8 +165,7 @@ namespace NTestController
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]   // Will need this later.
-        private static IList<IPlatform> GetPlatforms(XmlDocument xmlDoc, XmlNode defaultsNode)
+        private static List<IPlatform> GetPlatforms(XmlDocument xmlDoc, XmlNode defaultsNode)
         {
             var platforms = new List<IPlatform>();
 
