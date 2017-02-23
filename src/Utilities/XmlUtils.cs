@@ -6,6 +6,27 @@ namespace Utilities
     public static class XmlUtils
     {
         /// <summary>
+        /// Loads the XML file into an XmlDocument.
+        /// </summary>
+        /// <param name="xmlFile">The XML file to load.</param>
+        /// <returns>The XmlDocument.</returns>
+        public static XmlDocument LoadXmlDocument(string xmlFile)
+        {
+            try
+            {
+                var xmlDoc = new XmlDocument();
+                xmlDoc.Load(xmlFile);
+
+                return xmlDoc;
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine("\nFailed to load '{0}' file!\n{1}\n", xmlFile, e.Message);
+                throw;
+            }
+        }
+
+        /// <summary>
         /// Gets the XML attribute from the specified XmlNode.
         /// </summary>
         /// <param name="node">The XmlNode containing the attribute you want.</param>

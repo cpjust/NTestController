@@ -59,18 +59,27 @@ namespace NTestController
                     // Load plugins.
                     Dictionary<PluginType, IPlugin> plugins = GetPlugins(_options.ConfigFile);
 
-                    var xmlDoc = LoadXmlDocument(_options.ConfigFile);
+                    var xmlDoc = XmlUtils.LoadXmlDocument(_options.ConfigFile);
                     var defaultsNode = GetDefaultsXmlNode(xmlDoc);
                     var platforms = GetPlatforms(xmlDoc, defaultsNode);
 
                     // Execute Reader plugin.
-                    plugins[PluginType.TestReader].Execute();
+                    var readerPlugin = plugins[PluginType.TestReader] as IReaderPlugin;
+                    readerPlugin.Execute();
+
+                    // Add all tests to queue.
+                    var testQueue = new TestQueue();
+
+                    foreach (var test in readerPlugin.Tests)
+                    {
+                        testQueue.EnqueueTestToRun(test);
+                    }
 
                     // Execute Setup plugin.
 
                     // Execute Test Executor plugin.
-                    var ExecutorPlugin = plugins[PluginType.TestExecutor] as IExecutorPlugin;
-                    ExecuteTests(ExecutorPlugin, platforms);
+                    var executorPlugin = plugins[PluginType.TestExecutor] as IExecutorPlugin;
+                    ExecuteTests(executorPlugin, platforms, testQueue);
 
                     // Execute Cleanup plugin.
 
@@ -83,7 +92,7 @@ namespace NTestController
 
         #region Private functions
 
-        private static void ExecuteTests(IExecutorPlugin executorPlugin, List<IPlatform> platforms)
+        private static void ExecuteTests(IExecutorPlugin executorPlugin, List<IPlatform> platforms, TestQueue testQueue)
         {
             ThrowIf.ArgumentNull(executorPlugin, nameof(executorPlugin));
             ThrowIf.ArgumentNull(platforms, nameof(platforms));
@@ -93,6 +102,7 @@ namespace NTestController
             var plugins = new List<IExecutorPlugin> { executorPlugin };
 
             executorPlugin.Computer = firstPlatform.Computers[0];
+            executorPlugin.TestQueue = testQueue;
 
             // We already have one plugin, so add 1 less than Computers.Count.
             for (int i = 1; i < firstPlatform.Computers.Count; ++i)
@@ -135,21 +145,7 @@ namespace NTestController
             }
         }
 
-        private static XmlDocument LoadXmlDocument(string xmlFile)
-        {
-            try
-            {
-                var xmlDoc = new XmlDocument();
-                xmlDoc.Load(xmlFile);
-
-                return xmlDoc;
-            }
-            catch (Exception e)
-            {
-                Log.WriteError("\nFailed to load NTestController.xml file!\n{0}\n\n{1}", e.Message, _options.GetUsage());
-                throw;
-            }
-        }
+        
 
         private static XmlNode GetDefaultsXmlNode(XmlDocument xmlDoc)
         {
