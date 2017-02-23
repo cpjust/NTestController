@@ -1,37 +1,28 @@
 ﻿using System;
 using NTestController;
 using Utilities;
-//using System.Collections.Generic;
 using static NTestController.TestResult;
 using System.Linq;
 using System.Collections.Generic;
 
 [assembly: CLSCompliant(true)]
+[assembly: System.Runtime.InteropServices.ComVisible(false)]
 namespace NUnitReporter
 {
-    public class NUnitReporterPlugin : IPlugin
+    public class NUnitReporterPlugin : IReporterPlugin
     {
-        private TestQueue _testQueue;
-        private string _xmlConfig;
+        public TestQueue TestQueue { get; set; }
+        private string _testInputFile;
         
         /// <summary>
         /// Initializes a new instance of the <see cref="NUnitReporterPlugin"/> class.
         /// </summary>
-        /// <param name="xmlConfig">NTestController.xml file path.</param>
-        public NUnitReporterPlugin(string xmlConfig)
+        /// <param name="testInputFile">NTestController.xml file path.</param>
+        public NUnitReporterPlugin(string testInputFile)
         {
-            ThrowIf.StringIsNullOrWhiteSpace(xmlConfig, nameof(xmlConfig));
+            ThrowIf.StringIsNullOrWhiteSpace(testInputFile, nameof(testInputFile));
 
-            _xmlConfig = xmlConfig;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="NUnitReporter.NUnitReporterPlugin"/> class.
-        /// </summary>
-        /// <param name="testQueue">Test queue.</param>
-        public NUnitReporterPlugin(TestQueue testQueue)
-        {
-            _testQueue = testQueue;
+            _testInputFile = testInputFile;
         }
 
         #region Inherited from IPlugin
@@ -42,7 +33,7 @@ namespace NUnitReporter
         /// <seealso cref="IPlugin.Execute()"/>
         public bool Execute()
         {
-            List<Test> tests = _testQueue.CompletedTests.ToList();
+            List<Test> tests = TestQueue.CompletedTests.ToList();
         
             int successfull_tests = 0;
             int failed_tests = 0;
@@ -86,7 +77,20 @@ namespace NUnitReporter
             if (not_ran_tests > 0)
                 Console.WriteLine("Total test cases not run:        {0}", not_ran_tests);
 
+            if (tests != null)
+                Console.WriteLine("Total test cases:                {0}", tests.Count);
+
             return true;
+        }
+
+        /// <seealso cref="IReporterPlugin.ClonePlugin()"/>
+        public IReporterPlugin ClonePlugin()
+        {
+            var newPlugin = new NUnitReporterPlugin(_testInputFile);
+
+            newPlugin.TestQueue = TestQueue;
+
+            return newPlugin;
         }
 
         #endregion Inherited from IPlugin
