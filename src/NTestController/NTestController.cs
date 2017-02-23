@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using System.Xml;
 using Logger;
 using NTestController.Factories;
+using Utilities;
 
 [assembly: CLSCompliant(true)]
 [assembly: System.Runtime.InteropServices.ComVisible(false)]
@@ -56,12 +58,27 @@ namespace NTestController
                     // Load plugins.
                     Dictionary<PluginType, IPlugin> plugins = GetPlugins(_options.ConfigFile);
 
+                    var xmlDoc = XmlUtils.LoadXmlDocument(_options.ConfigFile);
+                    var defaultsNode = GetDefaultsXmlNode(xmlDoc);
+                    var platforms = GetPlatforms(xmlDoc, defaultsNode);
+
                     // Execute Reader plugin.
-                    plugins[PluginType.TestReader].Execute();
+                    var readerPlugin = plugins[PluginType.TestReader] as IReaderPlugin;
+                    readerPlugin.Execute();
+
+                    // Add all tests to queue.
+                    var testQueue = new TestQueue();
+
+                    foreach (var test in readerPlugin.Tests)
+                    {
+                        testQueue.EnqueueTestToRun(test);
+                    }
 
                     // Execute Setup plugin.
 
                     // Execute Test Executor plugin.
+                    var executorPlugin = plugins[PluginType.TestExecutor] as IExecutorPlugin;
+                    ExecuteTests(executorPlugin, platforms, testQueue);
 
                     // Execute Cleanup plugin.
 
@@ -73,6 +90,34 @@ namespace NTestController
         #endregion Public functions
 
         #region Private functions
+
+        private static void ExecuteTests(IExecutorPlugin executorPlugin, List<IPlatform> platforms, TestQueue testQueue)
+        {
+            ThrowIf.ArgumentNull(executorPlugin, nameof(executorPlugin));
+            ThrowIf.ArgumentNull(platforms, nameof(platforms));
+
+            // Hack: For now just use a single Platform.  TODO: Use all Platforms later.
+            var firstPlatform = platforms[0];
+            var plugins = new List<IExecutorPlugin> { executorPlugin };
+
+            executorPlugin.Computer = firstPlatform.Computers[0];
+            executorPlugin.TestQueue = testQueue;
+
+            // We already have one plugin, so add 1 less than Computers.Count.
+            for (int i = 1; i < firstPlatform.Computers.Count; ++i)
+            {
+                var newPlugin = executorPlugin.ClonePlugin();
+                newPlugin.Computer = firstPlatform.Computers[i];
+
+                plugins.Add(newPlugin);
+            }
+
+            // Run all plugins in parallel.
+            Parallel.ForEach(plugins, plugin =>
+            {
+                plugin.Execute();
+            });
+        }
 
         private static Dictionary<PluginType, IPlugin> GetPlugins(string configFile)
         {
@@ -86,8 +131,11 @@ namespace NTestController
 
                 foreach (XmlNode node in pluginsNode)
                 {
-                    IPlugin plugin = PluginFactory.GetPlugin(node, configFile);
-                    plugins.Add(plugin.PluginType, plugin);
+                    if (node.NodeType == XmlNodeType.Element)
+                    {
+                        IPlugin plugin = PluginFactory.GetPlugin(node, configFile);
+                        plugins.Add(plugin.PluginType, plugin);
+                    }
                 }
 
                 return plugins;
@@ -99,41 +147,35 @@ namespace NTestController
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]   // Will need this later.
-        private static XmlNode GetDefaultsXmlNode(string configFile)
+        
+
+        private static XmlNode GetDefaultsXmlNode(XmlDocument xmlDoc)
         {
             try
             {
-                var XMLDoc = new XmlDocument();
-                XMLDoc.Load(configFile);
-
-                XmlNode defaultsNode = XMLDoc.FirstChild.SelectSingleNode("defaults");
+                XmlNode defaultsNode = xmlDoc.FirstChild.SelectSingleNode("defaults");
                 return defaultsNode;
             }
             catch (Exception e)
             {
-                Log.WriteError("\n{0}\n\n{1}", e.Message, _options.GetUsage());
+                Log.WriteError("\nFailed to find the 'defaults' XML node!\n{0}", e.Message);
                 throw;
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]   // Will need this later.
-        private static IList<IPlatform> GetPlatforms(string configFile, XmlNode defaultsNode)
+        private static List<IPlatform> GetPlatforms(XmlDocument xmlDoc, XmlNode defaultsNode)
         {
             var platforms = new List<IPlatform>();
 
             try
             {
-                var XMLDoc = new XmlDocument();
-                XMLDoc.Load(configFile);
-
-                XmlNode node = XMLDoc.FirstChild;
+                XmlNode node = xmlDoc.FirstChild;
 
                 while (node != null)
                 {
                     if (node.NodeType == XmlNodeType.Element)
                     {
-                        XmlNode platformNode = XMLDoc.FirstChild.SelectSingleNode("platform");
+                        XmlNode platformNode = xmlDoc.FirstChild.SelectSingleNode("platform");
                         IPlatform platform = PlatformFactory.CreatePlatform(platformNode, defaultsNode);
                         platforms.Add(platform);
                     }

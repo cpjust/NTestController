@@ -8,11 +8,11 @@ using System.IO;
 [assembly: System.Runtime.InteropServices.ComVisible(false)]
 namespace NUnitReader
 {
-    public class NUnitReaderPlugin : IPlugin
+    public class NUnitReaderPlugin : IReaderPlugin
     {
         private string _testInputFile;
 
-        public IList<Test> Tests { get; } = new List<Test>();
+        public List<Test> Tests { get; } = new List<Test>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NUnitReader.NUnitReaderPlugin"/> class.
