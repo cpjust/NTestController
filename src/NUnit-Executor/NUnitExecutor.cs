@@ -1,6 +1,7 @@
 ﻿using System;
 using NTestController;
 using System.Collections.Generic;
+using Utilities;
 
 namespace NUnitExecutor
 {
@@ -10,6 +11,18 @@ namespace NUnitExecutor
         private IComputer _computer;
         private TestQueue _testQueue;
         private string _nunitPath;
+        private string _xmlConfig;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NUnitExecutorPlugin"/> class.
+        /// </summary>
+        /// <param name="xmlConfig">NTestController.xml file path.</param>
+        public NUnitExecutorPlugin(string xmlConfig)
+        {
+            ThrowIf.StringIsNullOrWhiteSpace(xmlConfig, nameof(xmlConfig));
+
+            _xmlConfig = xmlConfig;
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NUnitExecutor.NUnitExecutorPlugin"/> class.
