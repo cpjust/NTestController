@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using Logger;
@@ -132,8 +131,11 @@ namespace NTestController
 
                 foreach (XmlNode node in pluginsNode)
                 {
-                    IPlugin plugin = PluginFactory.GetPlugin(node, configFile);
-                    plugins.Add(plugin.PluginType, plugin);
+                    if (node.NodeType == XmlNodeType.Element)
+                    {
+                        IPlugin plugin = PluginFactory.GetPlugin(node, configFile);
+                        plugins.Add(plugin.PluginType, plugin);
+                    }
                 }
 
                 return plugins;

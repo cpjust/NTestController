@@ -21,8 +21,12 @@ namespace NTestController.Factories
                 if (node.NodeType == XmlNodeType.Element)
                 {
                     XmlNode computerNode = platformNode.FirstChild.SelectSingleNode("computer");
-                    IComputer computer = ComputerFactory.CreateComputer(computerNode, defaultsNode);
-                    platform.Computers.Add(computer);
+
+                    if (computerNode != null)
+                    {
+                        IComputer computer = ComputerFactory.CreateComputer(computerNode, defaultsNode);
+                        platform.Computers.Add(computer);
+                    }
                 }
 
                 node = node.NextSibling;
