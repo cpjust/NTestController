@@ -43,7 +43,7 @@ namespace NTestController
         public string ExecutionTarget { get; set; }
 
         /// <summary>The test execution time in milliseconds.</summary>
-        public int ExecutionTime { get; set; }
+        public double ExecutionTime { get; set; }
 
         /// <summary>The test timeout in milliseconds.  0 indicates no timeout.</summary>
         public int Timeout { get; set; }
