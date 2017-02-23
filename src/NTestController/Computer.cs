@@ -31,6 +31,9 @@ namespace NTestController
         /// <see cref="IComputer.WorkingDirectory"/>
         public string WorkingDirectory { get; set; }
 
+        /// <see cref="IComputer.NunitPath"/>
+        public string NunitPath { get; set; }   // TODO: Move this to a NUnitComputer class.
+
         #endregion Members from IComputer
     }
 }

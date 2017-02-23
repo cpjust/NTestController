@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace NTestController
 {
@@ -19,6 +20,11 @@ namespace NTestController
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId = "CPU")]
         string CPU { get; set; }
+
+        /// <summary>
+        /// The list of Computers for this Platform.
+        /// </summary>
+        List<IComputer> Computers { get; }
     }
 }
 

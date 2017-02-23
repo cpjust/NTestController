@@ -56,12 +56,17 @@ namespace NTestController
                     // Load plugins.
                     Dictionary<PluginType, IPlugin> plugins = GetPlugins(_options.ConfigFile);
 
+                    var xmlDoc = LoadXmlDocument(_options.ConfigFile);
+                    var defaultsNode = GetDefaultsXmlNode(xmlDoc);
+                    var platforms = GetPlatforms(xmlDoc, defaultsNode);
+
                     // Execute Reader plugin.
                     plugins[PluginType.TestReader].Execute();
 
                     // Execute Setup plugin.
 
                     // Execute Test Executor plugin.
+
 
                     // Execute Cleanup plugin.
 
@@ -99,41 +104,51 @@ namespace NTestController
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]   // Will need this later.
-        private static XmlNode GetDefaultsXmlNode(string configFile)
+        private static XmlDocument LoadXmlDocument(string xmlFile)
         {
             try
             {
-                var XMLDoc = new XmlDocument();
-                XMLDoc.Load(configFile);
+                var xmlDoc = new XmlDocument();
+                xmlDoc.Load(xmlFile);
 
-                XmlNode defaultsNode = XMLDoc.FirstChild.SelectSingleNode("defaults");
-                return defaultsNode;
+                return xmlDoc;
             }
             catch (Exception e)
             {
-                Log.WriteError("\n{0}\n\n{1}", e.Message, _options.GetUsage());
+                Log.WriteError("\nFailed to load NTestController.xml file!\n{0}\n\n{1}", e.Message, _options.GetUsage());
                 throw;
             }
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]   // Will need this later.
-        private static IList<IPlatform> GetPlatforms(string configFile, XmlNode defaultsNode)
+        private static XmlNode GetDefaultsXmlNode(XmlDocument xmlDoc)
+        {
+            try
+            {
+                XmlNode defaultsNode = xmlDoc.FirstChild.SelectSingleNode("defaults");
+                return defaultsNode;
+            }
+            catch (Exception e)
+            {
+                Log.WriteError("\nFailed to find the 'defaults' XML node!\n{0}", e.Message);
+                throw;
+            }
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]   // Will need this later.
+        private static IList<IPlatform> GetPlatforms(XmlDocument xmlDoc, XmlNode defaultsNode)
         {
             var platforms = new List<IPlatform>();
 
             try
             {
-                var XMLDoc = new XmlDocument();
-                XMLDoc.Load(configFile);
-
-                XmlNode node = XMLDoc.FirstChild;
+                XmlNode node = xmlDoc.FirstChild;
 
                 while (node != null)
                 {
                     if (node.NodeType == XmlNodeType.Element)
                     {
-                        XmlNode platformNode = XMLDoc.FirstChild.SelectSingleNode("platform");
+                        XmlNode platformNode = xmlDoc.FirstChild.SelectSingleNode("platform");
                         IPlatform platform = PlatformFactory.CreatePlatform(platformNode, defaultsNode);
                         platforms.Add(platform);
                     }
