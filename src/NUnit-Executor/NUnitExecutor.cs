@@ -94,8 +94,6 @@ namespace NUnitExecutor
             processStartInfo.CreateNoWindow = true;
             processStartInfo.ErrorDialog = false;
             processStartInfo.UseShellExecute = false;
-            processStartInfo.RedirectStandardError = true;
-            processStartInfo.RedirectStandardOutput = true;
 
             if (Computer.WorkingDirectory != null)
             {
@@ -111,15 +109,15 @@ namespace NUnitExecutor
             Log.WriteInfo("----- Running test: '{0}' on: {1}", test.TestName, Computer.Hostname);
             Log.WriteDebug("***** Running: {0} {1}", NunitPath, arguments);
             var process = Process.Start(processStartInfo);
-            process.WaitForExit((Computer.Timeout + 60) * 1000);
+            bool finished = process.WaitForExit((Computer.Timeout + 60) * 1000);
 
-            // TODO: Add result to CompletedTests list.
-            var testResult = new TestResult()
+            if (!finished)
             {
-                Error = process.StandardError.ReadToEnd(),
-                Output = process.StandardOutput.ReadToEnd()
-            };
-
+                Log.WriteWarning("Timed out when running: '{0}' on {1}!", test.TestName, Computer.Hostname);
+            }
+            
+            // TODO: Add result to CompletedTests list.
+            var testResult = new TestResult();            
             string xmlOutputFile = StringUtils.FormatInvariant("{0}.xml", baseOutputFile);
 
             if (File.Exists(xmlOutputFile))
