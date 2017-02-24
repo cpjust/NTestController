@@ -10,8 +10,7 @@ namespace NUnitExecutor
 {
     public class NUnitExecutorPlugin : IExecutorPlugin
     {
-        private IReadOnlyOptions _options;
-        private string _nunitPath;
+        private string NunitPath => Computer.NunitPath;
         private string _xmlConfig;
 
         #region Constructors
@@ -27,25 +26,6 @@ namespace NUnitExecutor
             _xmlConfig = xmlConfig;
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="NUnitExecutor.NUnitExecutorPlugin"/> class.
-        /// </summary>
-        /// <param name="options">Options from the command line.</param>
-        /// <param name="computer">Target Computer where the tests will be run.</param>
-        /// <param name="testQueue">Test queue.</param>
-        /// <param name="nunitPath">Nunit path.</param>
-        public NUnitExecutorPlugin(
-            IReadOnlyOptions options,
-            IComputer computer,
-            TestQueue testQueue,
-            string nunitPath)
-        {
-            _options = options;
-            Computer = computer;
-            TestQueue = testQueue;
-            _nunitPath = nunitPath;
-        }
-
         #endregion Constructors
 
         #region Inherited from IExecutorPlugin
@@ -57,6 +37,7 @@ namespace NUnitExecutor
             get { return PluginType.TestExecutor; }
         }
 
+        public IReadOnlyOptions Options { get; set; }
         public IComputer Computer { get; set; }
         public TestQueue TestQueue { get; set; }
 
@@ -78,8 +59,7 @@ namespace NUnitExecutor
         public IExecutorPlugin ClonePlugin()
         {
             var newPlugin = new NUnitExecutorPlugin(_xmlConfig);
-            newPlugin._options = _options;
-            newPlugin._nunitPath = _nunitPath;
+            newPlugin.Options = Options;
 
             newPlugin.Name = Name;
             newPlugin.Computer = Computer;
@@ -93,17 +73,17 @@ namespace NUnitExecutor
         private void RunTest(NUnitTest test)
         {
             // TODO: Run the test.
-            string baseOutputFile = StringUtils.FormatInvariant(@"{0}\{1}", _options.OutputDirectory, test.TestName);
+            string baseOutputFile = StringUtils.FormatInvariant(@"{0}\{1}", Options.OutputDirectory, test.TestName);
 
             string arguments = StringUtils.FormatInvariant(@"{0} /nologo {1} /out:{2}.txt /xml:{2}.xml /timeout:{3}",
                 test.DllPath, test.TestName, baseOutputFile, Computer.Timeout * 1000);
 
             if (Computer.WorkingDirectory != null)
             {
-                arguments = StringUtils.FormatInvariant("{0} /work:{1}", Computer.WorkingDirectory);
+                arguments = StringUtils.FormatInvariant("{0} /work:{1}", arguments, Computer.WorkingDirectory);
             }
 
-            var processStartInfo = new ProcessStartInfo(_nunitPath, arguments);
+            var processStartInfo = new ProcessStartInfo(NunitPath, arguments);
             processStartInfo.CreateNoWindow = true;
             processStartInfo.ErrorDialog = false;
             processStartInfo.UseShellExecute = false;

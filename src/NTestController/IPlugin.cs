@@ -30,6 +30,7 @@ namespace NTestController
 
     public interface IExecutorPlugin : IPlugin
     {
+        IReadOnlyOptions Options { get; set; }
         IComputer Computer { get; set; }
         TestQueue TestQueue { get; set; }
 

@@ -78,7 +78,9 @@ namespace NTestController
 
                     // Execute Test Executor plugin.
                     var executorPlugin = plugins[PluginType.TestExecutor] as IExecutorPlugin;
-                    ExecuteTests(executorPlugin, platforms, testQueue);
+                    executorPlugin.Options = _options;
+                    executorPlugin.TestQueue = testQueue;
+                    ExecuteTests(executorPlugin, platforms);
 
                     // Execute Cleanup plugin.
 
@@ -91,7 +93,7 @@ namespace NTestController
 
         #region Private functions
 
-        private static void ExecuteTests(IExecutorPlugin executorPlugin, List<IPlatform> platforms, TestQueue testQueue)
+        private static void ExecuteTests(IExecutorPlugin executorPlugin, List<IPlatform> platforms)
         {
             ThrowIf.ArgumentNull(executorPlugin, nameof(executorPlugin));
             ThrowIf.ArgumentNull(platforms, nameof(platforms));
@@ -101,7 +103,6 @@ namespace NTestController
             var plugins = new List<IExecutorPlugin> { executorPlugin };
 
             executorPlugin.Computer = firstPlatform.Computers[0];
-            executorPlugin.TestQueue = testQueue;
 
             // We already have one plugin, so add 1 less than Computers.Count.
             for (int i = 1; i < firstPlatform.Computers.Count; ++i)
