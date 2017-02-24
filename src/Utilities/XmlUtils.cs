@@ -74,7 +74,7 @@ namespace Utilities
         /// <exception cref="XmlException">There was an error parsing the XmlNode.</exception>
         public static XmlNode GetChildNodeOrDefault(XmlNode node, XmlNode defaultsNode, string nodeName)
         {
-            var childNode = node.FirstChild.SelectSingleNode(nodeName) ?? defaultsNode.FirstChild.SelectSingleNode(nodeName);
+            var childNode = FindFirstChildByName(node, nodeName) ?? FindFirstChildByName(defaultsNode, nodeName);
 
             if (childNode == null)
             {
@@ -82,6 +82,31 @@ namespace Utilities
             }
 
             return childNode;
+        }
+
+        /// <summary>
+        /// Finds the first child node with the specified name.
+        /// </summary>
+        /// <param name="parentNode">The parent node whose child you want to find.</param>
+        /// <param name="name">The name of the child node to find.</param>
+        /// <returns>The child node, or null if not found.</returns>
+        public static XmlNode FindFirstChildByName(XmlNode parentNode, string name)
+        {
+            XmlNode child = null;
+            XmlNode node = parentNode.FirstChild;
+
+            while (node != null)
+            {
+                if ((node.NodeType == XmlNodeType.Element) && (node.Name == name))
+                {
+                    child = node;
+                    break;
+                }
+
+                node = node.NextSibling;
+            }
+
+            return child;
         }
     }
 }
