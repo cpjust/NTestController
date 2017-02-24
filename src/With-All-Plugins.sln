@@ -33,7 +33,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NUnit-Executor", "NUnit-Executor\NUnit-Executor.csproj", "{C66476DF-DABB-4087-84B6-951371A69296}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NUnit-Reporter", "NUnit-Reporter2\NUnit-Reporter.csproj", "{F42D8164-9021-45B5-B053-43F21A8BB5E6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NUnit-Reporter", "NUnit-Reporter\NUnit-Reporter.csproj", "{F42D8164-9021-45B5-B053-43F21A8BB5E6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -7,7 +7,7 @@
     <ProjectGuid>{F42D8164-9021-45B5-B053-43F21A8BB5E6}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>NUnit_Reporter2</RootNamespace>
+    <RootNamespace>NUnit_Reporter</RootNamespace>
     <AssemblyName>NUnit-Reporter</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
