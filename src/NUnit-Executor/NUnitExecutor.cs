@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Xml;
+using Logger;
 using NTestController;
 using NUnitReader;
 using Utilities;
@@ -10,6 +11,8 @@ namespace NUnitExecutor
 {
     public class NUnitExecutorPlugin : IExecutorPlugin
     {
+        private static ILogger Log { get; } = ConsoleLogger.Instance;
+
         private string NunitPath => Computer.NunitPath;
         private string _xmlConfig;
 
@@ -44,6 +47,8 @@ namespace NUnitExecutor
         /// <seealso cref="IPlugin.Execute()"/>
         public bool Execute()
         {
+            Log.WriteInfo("===== Starting tests on Computer: {0}", Computer.Hostname);
+
             var test = TestQueue.DequeueTestToRun() as NUnitTest;
 
             while (test != null)
@@ -51,6 +56,8 @@ namespace NUnitExecutor
                 RunTest(test);
                 test = TestQueue.DequeueTestToRun() as NUnitTest;
             }
+
+            Log.WriteInfo("===== Finished all tests on Computer: {0}", Computer.Hostname);
 
             return true;
         }
@@ -75,7 +82,7 @@ namespace NUnitExecutor
             // TODO: Run the test.
             string baseOutputFile = StringUtils.FormatInvariant(@"{0}\{1}", Options.OutputDirectory, test.TestName);
 
-            string arguments = StringUtils.FormatInvariant(@"{0} /nologo /run:{1} /out:{2}.txt /xml:{2}.xml /timeout:{3}",
+            string arguments = StringUtils.FormatInvariant(@"{0} /nologo /labels /run:{1} /out:{2}.txt /xml:{2}.xml /timeout:{3}",
                 test.DllPath, test.TestName, baseOutputFile, Computer.Timeout * 1000);
 
             if (Computer.WorkingDirectory != null)
@@ -97,11 +104,14 @@ namespace NUnitExecutor
 
             foreach (var envKeyValue in Computer.EnvironmentVariables)
             {
+                Log.WriteDebug("** On Computer '{0}', setting env var '{1}' = '{2}'", Computer.Hostname, envKeyValue.Key, envKeyValue.Value);
                 processStartInfo.EnvironmentVariables.Add(envKeyValue.Key, envKeyValue.Value);
             }
 
+            Log.WriteInfo("----- Running test: '{0}' on: {1}", test.TestName, Computer.Hostname);
+            Log.WriteDebug("***** Running: {0} {1}", NunitPath, arguments);
             var process = Process.Start(processStartInfo);
-            bool finished = process.WaitForExit((Computer.Timeout + 60) * 1000);
+            process.WaitForExit((Computer.Timeout + 60) * 1000);
 
             // TODO: Add result to CompletedTests list.
             var testResult = new TestResult()
@@ -123,6 +133,17 @@ namespace NUnitExecutor
 
             test.TestRuns.Add(testResult);
             TestQueue.AddCompletedTest(test);
+
+            // Print test output to stdout.
+            string outputFile = StringUtils.FormatInvariant("{0}.txt", baseOutputFile);
+
+            if (File.Exists(outputFile))
+            {
+                string outputContents = File.ReadAllText(outputFile);
+                Log.WriteDebug(outputContents);
+            }
+
+            Log.WriteInfo("----- Test: '{0}'  Status = {1} on {2}", test.TestName, testResult.Result, Computer.Hostname);
         }
 
         private void ParseNunitResults(string xmlOutputFile, TestResult testResult)
@@ -133,14 +154,14 @@ namespace NUnitExecutor
 
             XmlNode testResultsNode = XmlUtils.FindFirstChildByName(xmlDoc, "test-results");
 
-            int totalTests = int.Parse(XmlUtils.GetXmlAttribute(testResultsNode, "total"));
+//            int totalTests = int.Parse(XmlUtils.GetXmlAttribute(testResultsNode, "total"));
             int errors = int.Parse(XmlUtils.GetXmlAttribute(testResultsNode, "errors"));
             int failures = int.Parse(XmlUtils.GetXmlAttribute(testResultsNode, "failures"));
-            int notRun = int.Parse(XmlUtils.GetXmlAttribute(testResultsNode, "not-run"));
-            int inconclusive = int.Parse(XmlUtils.GetXmlAttribute(testResultsNode, "inconclusive"));
-            int ignored = int.Parse(XmlUtils.GetXmlAttribute(testResultsNode, "ignored"));
-            int skipped = int.Parse(XmlUtils.GetXmlAttribute(testResultsNode, "skipped"));
-            int invalid = int.Parse(XmlUtils.GetXmlAttribute(testResultsNode, "invalid"));
+//            int notRun = int.Parse(XmlUtils.GetXmlAttribute(testResultsNode, "not-run"));
+//            int inconclusive = int.Parse(XmlUtils.GetXmlAttribute(testResultsNode, "inconclusive"));
+//            int ignored = int.Parse(XmlUtils.GetXmlAttribute(testResultsNode, "ignored"));
+//            int skipped = int.Parse(XmlUtils.GetXmlAttribute(testResultsNode, "skipped"));
+//            int invalid = int.Parse(XmlUtils.GetXmlAttribute(testResultsNode, "invalid"));
             TimeSpan totalTime = TimeSpan.Parse(XmlUtils.GetXmlAttribute(testResultsNode, "time"));
 
             testResult.ExecutionTime = totalTime.TotalMilliseconds;
