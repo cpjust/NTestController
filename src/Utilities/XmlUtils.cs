@@ -35,7 +35,7 @@ namespace Utilities
         /// <exception cref="XmlException">There was an error parsing the XmlNode.</exception>
         public static string GetXmlAttribute(XmlNode node, string attributeName)
         {
-            ThrowIf.ArgumentNull(node, nameof(XmlNodeType));
+            ThrowIf.ArgumentNull(node, nameof(node));
             ThrowIf.StringIsNullOrWhiteSpace(attributeName, nameof(attributeName));
 
             if (node.Attributes?[attributeName] == null)

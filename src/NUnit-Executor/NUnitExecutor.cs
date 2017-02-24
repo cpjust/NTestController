@@ -75,7 +75,7 @@ namespace NUnitExecutor
             // TODO: Run the test.
             string baseOutputFile = StringUtils.FormatInvariant(@"{0}\{1}", Options.OutputDirectory, test.TestName);
 
-            string arguments = StringUtils.FormatInvariant(@"{0} /nologo {1} /out:{2}.txt /xml:{2}.xml /timeout:{3}",
+            string arguments = StringUtils.FormatInvariant(@"{0} /nologo /run:{1} /out:{2}.txt /xml:{2}.xml /timeout:{3}",
                 test.DllPath, test.TestName, baseOutputFile, Computer.Timeout * 1000);
 
             if (Computer.WorkingDirectory != null)
@@ -131,7 +131,7 @@ namespace NUnitExecutor
 
             var xmlDoc = XmlUtils.LoadXmlDocument(xmlOutputFile);
 
-            XmlNode testResultsNode = xmlDoc.FirstChild.SelectSingleNode("test-results");
+            XmlNode testResultsNode = XmlUtils.FindFirstChildByName(xmlDoc, "test-results");
 
             int totalTests = int.Parse(XmlUtils.GetXmlAttribute(testResultsNode, "total"));
             int errors = int.Parse(XmlUtils.GetXmlAttribute(testResultsNode, "errors"));
