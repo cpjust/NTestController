@@ -25,6 +25,7 @@ namespace NTestController
 
     public interface IReaderPlugin : IPlugin
     {
+        string TestInputFile { get; set; }
         List<Test> Tests { get; }
     }
 

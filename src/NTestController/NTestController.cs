@@ -64,6 +64,7 @@ namespace NTestController
 
                     // Execute Reader plugin.
                     var readerPlugin = plugins[PluginType.TestReader] as IReaderPlugin;
+                    readerPlugin.TestInputFile = _options.TestFile;
                     readerPlugin.Execute();
 
                     // Add all tests to queue.

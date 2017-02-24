@@ -10,7 +10,7 @@ namespace NUnitReader
 {
     public class NUnitReaderPlugin : IReaderPlugin
     {
-        private readonly string _testInputFile;
+        public string TestInputFile { get; set; }
 
         public List<Test> Tests { get; } = new List<Test>();
 
@@ -22,7 +22,7 @@ namespace NUnitReader
         {
             ThrowIf.StringIsNullOrWhiteSpace(testInputFile, nameof(testInputFile));
 
-            _testInputFile = testInputFile;
+            TestInputFile = testInputFile;
         }
 
         #region Inherited from IPlugin
@@ -34,12 +34,12 @@ namespace NUnitReader
         public bool Execute()
         {
             // Read input file and add to Tests.
-            if (!File.Exists(_testInputFile))
+            if (!File.Exists(TestInputFile))
             {
-                throw new FileNotFoundException("Couldn't find file: {0}".FormatInvariant(_testInputFile));
+                throw new FileNotFoundException("Couldn't find file: {0}".FormatInvariant(TestInputFile));
             }
 
-            var fileLines = File.ReadAllLines(_testInputFile);
+            var fileLines = File.ReadAllLines(TestInputFile);
 
             ParseTestInputFile(fileLines);
             return true;
