@@ -86,6 +86,9 @@ namespace NTestController
                     // Execute Cleanup plugin.
 
                     // Execute Reporter plugin.
+                    var reporterPlugin = plugins[PluginType.TestReporter] as IReporterPlugin;
+                    reporterPlugin.TestQueue = testQueue;
+                    reporterPlugin.Execute();
                 }
             }
         }
