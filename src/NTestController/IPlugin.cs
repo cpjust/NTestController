@@ -25,7 +25,13 @@ namespace NTestController
 
     public interface IReaderPlugin : IPlugin
     {
+        string TestInputFile { get; set; }
         List<Test> Tests { get; }
+    }
+
+    public interface IReporterPlugin : IPlugin
+    {
+        TestQueue TestQueue { get; set; }
     }
 
     public interface IExecutorPlugin : IPlugin

@@ -10,7 +10,7 @@ namespace NUnitReader
 {
     public class NUnitReaderPlugin : IReaderPlugin
     {
-        private string _testInputFile;
+        public string TestInputFile { get; set; }
 
         public List<Test> Tests { get; } = new List<Test>();
 
@@ -22,24 +22,24 @@ namespace NUnitReader
         {
             ThrowIf.StringIsNullOrWhiteSpace(testInputFile, nameof(testInputFile));
 
-            _testInputFile = testInputFile;
+            TestInputFile = testInputFile;
         }
 
         #region Inherited from IPlugin
 
-        public string Name { get { return nameof(NUnitReader); } }
-        public PluginType PluginType { get { return PluginType.TestReader; } }
+        public string Name => nameof(NUnitReader);
+        public PluginType PluginType => PluginType.TestReader;
 
         /// <seealso cref="IPlugin.Execute()"/>
         public bool Execute()
         {
             // Read input file and add to Tests.
-            if (!File.Exists(_testInputFile))
+            if (!File.Exists(TestInputFile))
             {
-                throw new FileNotFoundException(StringUtils.FormatInvariant("Couldn't find file: {0}", _testInputFile));
+                throw new FileNotFoundException("Couldn't find file: {0}".FormatInvariant(TestInputFile));
             }
 
-            var fileLines = File.ReadAllLines(_testInputFile);
+            var fileLines = File.ReadAllLines(TestInputFile);
 
             ParseTestInputFile(fileLines);
             return true;
@@ -68,7 +68,7 @@ namespace NUnitReader
                 if (lineParts.Length != 2)
                 {
                     throw new InvalidDataException(
-                        StringUtils.FormatInvariant("Expected 2 parts ('|' separated) but found {0} parts!", lineParts.Length));
+                        "Expected 2 parts ('|' separated) but found {0} parts!".FormatInvariant(lineParts.Length));
                 }
 
                 var testInput = new NUnitTest(lineParts[0].Trim(), lineParts[1].Trim());
