@@ -18,9 +18,9 @@ namespace NTestController.Factories
 
             while (node != null)
             {
-                if (node.NodeType == XmlNodeType.Element)
+                if ((node.NodeType == XmlNodeType.Element) && (node.Name == "computer"))
                 {
-                    XmlNode computerNode = platformNode.FirstChild.SelectSingleNode("computer");
+                    XmlNode computerNode = node;
 
                     if (computerNode != null)
                     {

@@ -15,7 +15,7 @@ namespace NTestController.Factories
 
             computer.Hostname = XmlUtils.GetXmlAttribute(computerNode, "hostname");
 
-            var defaultComputerNode = defaultsNode.FirstChild.SelectSingleNode("computer");
+            var defaultComputerNode = defaultsNode.SelectSingleNode("computer");
 
             computer.Timeout = int.Parse(XmlUtils.GetXmlAttributeOrDefault(computerNode, defaultComputerNode, "timeout"));
 
