@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace NTestController
 {
@@ -20,6 +21,30 @@ namespace NTestController
         /// Execute this plugin instance.
         /// </summary>
         bool Execute();
+    }
+
+    public interface IReaderPlugin : IPlugin
+    {
+        string TestInputFile { get; set; }
+        List<Test> Tests { get; }
+    }
+
+    public interface IReporterPlugin : IPlugin
+    {
+        TestQueue TestQueue { get; set; }
+    }
+
+    public interface IExecutorPlugin : IPlugin
+    {
+        IReadOnlyOptions Options { get; set; }
+        IComputer Computer { get; set; }
+        TestQueue TestQueue { get; set; }
+
+        /// <summary>
+        /// Clones this plugin.
+        /// </summary>
+        /// <returns>A copy of this plugin.</returns>
+        IExecutorPlugin ClonePlugin();
     }
 
     public interface IPluginFactory
