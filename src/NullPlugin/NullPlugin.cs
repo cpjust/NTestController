@@ -1,4 +1,6 @@
-﻿using NTestController;
+﻿using System;
+using NTestController;
+using NTestController.Factories;
 
 namespace NullPlugin
 {
@@ -47,6 +49,8 @@ namespace NullPlugin
 
         public string Name { get; internal set; }
         public PluginType PluginType { get; internal set; }
+        public IComputerFactory ComputerFactory { get { return null; } }    // This isn't needed, so return null.
+        public IPlatformFactory PlatformFactory { get { return null; } }    // This isn't needed, so return null.
 
         public bool Execute()
         {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Xml;
 using Logger;
@@ -16,6 +17,8 @@ namespace NTestController
         #region Member variables
 
         private static Options _options = new Options();
+        private static Dictionary<PluginType, IPlugin> _plugins;
+
         private static ILogger Log { get; } = ConsoleLogger.Instance;
 
         #endregion Member variables
@@ -56,14 +59,14 @@ namespace NTestController
                     Directory.CreateDirectory(_options.OutputDirectory);
 
                     // Load plugins.
-                    Dictionary<PluginType, IPlugin> plugins = GetPlugins(_options.ConfigFile);
+                    _plugins = GetPlugins(_options.ConfigFile);
 
                     var xmlDoc = XmlUtils.LoadXmlDocument(_options.ConfigFile);
                     var defaultsNode = GetDefaultsXmlNode(xmlDoc);
                     var platforms = GetPlatforms(xmlDoc, defaultsNode);
 
                     // Execute Reader plugin.
-                    var readerPlugin = plugins[PluginType.TestReader] as IReaderPlugin;
+                    var readerPlugin = _plugins[PluginType.TestReader] as IReaderPlugin;
                     readerPlugin.TestInputFile = _options.TestFile;
                     readerPlugin.Execute();
 
@@ -78,7 +81,7 @@ namespace NTestController
                     // Execute Setup plugin.
 
                     // Execute Test Executor plugin.
-                    var executorPlugin = plugins[PluginType.TestExecutor] as IExecutorPlugin;
+                    var executorPlugin = _plugins[PluginType.TestExecutor] as IExecutorPlugin;
                     executorPlugin.Options = _options;
                     executorPlugin.TestQueue = testQueue;
                     ExecuteTests(executorPlugin, platforms);
@@ -86,7 +89,7 @@ namespace NTestController
                     // Execute Cleanup plugin.
 
                     // Execute Reporter plugin.
-                    var reporterPlugin = plugins[PluginType.TestReporter] as IReporterPlugin;
+                    var reporterPlugin = _plugins[PluginType.TestReporter] as IReporterPlugin;
                     reporterPlugin.TestQueue = testQueue;
                     reporterPlugin.Execute();
                 }
@@ -174,14 +177,17 @@ namespace NTestController
 
             try
             {
-                XmlNode node = xmlDoc.FirstChild;
+                var computerFactory = _plugins.Values.First().ComputerFactory;
+                var platformFactory = _plugins.Values.First().PlatformFactory;
+
+                var node = xmlDoc.FirstChild;
 
                 while (node != null)
                 {
                     if (node.NodeType == XmlNodeType.Element)
                     {
-                        XmlNode platformNode = xmlDoc.FirstChild.SelectSingleNode("platform");
-                        IPlatform platform = PlatformFactory.CreatePlatform(platformNode, defaultsNode);
+                        var platformNode = xmlDoc.FirstChild.SelectSingleNode("platform");
+                        var platform = platformFactory.CreatePlatform(platformNode, defaultsNode, computerFactory);
                         platforms.Add(platform);
                     }
 

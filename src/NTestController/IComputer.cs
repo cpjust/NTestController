@@ -43,12 +43,6 @@ namespace NTestController
         /// </summary>
         /// <value>The working directory for this thread.</value>
         string WorkingDirectory { get; set; }
-
-        /// <summary>
-        /// Gets or sets the NUnit path for this Computer.
-        /// </summary>
-        /// <value>The NUnit path for this Computer.</value>
-        string NunitPath { get; set; }  // TODO: Move this to a NUnitComputer class.
     }
 }
 

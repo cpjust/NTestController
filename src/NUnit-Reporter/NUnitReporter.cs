@@ -4,6 +4,9 @@ using Utilities;
 using static NTestController.TestResult;
 using System.Linq;
 using System.Collections.Generic;
+using NTestController.Factories;
+using NUnitReader;
+using NUnitReader.Factories;
 
 [assembly: CLSCompliant(true)]
 [assembly: System.Runtime.InteropServices.ComVisible(false)]
@@ -29,6 +32,8 @@ namespace NUnitReporter
 
         public string Name { get { return nameof(NUnitReporter); } }
         public PluginType PluginType { get { return PluginType.TestReporter; } }
+        public IComputerFactory ComputerFactory { get { return new NUnitComputerFactory(); } }
+        public IPlatformFactory PlatformFactory { get { return new NUnitPlatformFactory(); } }
 
         /// <seealso cref="IPlugin.Execute()"/>
         public bool Execute()
@@ -81,16 +86,6 @@ namespace NUnitReporter
                 Console.WriteLine("Total test cases:                {0}", tests.Count);
 
             return true;
-        }
-
-        /// <seealso cref="IReporterPlugin.ClonePlugin()"/>
-        public IReporterPlugin ClonePlugin()
-        {
-            var newPlugin = new NUnitReporterPlugin(_testInputFile);
-
-            newPlugin.TestQueue = TestQueue;
-
-            return newPlugin;
         }
 
         #endregion Inherited from IPlugin

@@ -58,6 +58,14 @@
       <Project>{1e2bd695-e014-4d56-9147-9c00babd8216}</Project>
       <Name>NTestController</Name>
     </ProjectReference>
+    <ProjectReference Include="..\NUnit-Executor\NUnit-Executor.csproj">
+      <Project>{c66476df-dabb-4087-84b6-951371a69296}</Project>
+      <Name>NUnit-Executor</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Plugins\NUnit-Reader\NUnit-Reader.csproj">
+      <Project>{759e5046-6f57-48a0-a55c-da296f946d08}</Project>
+      <Name>NUnit-Reader</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Utilities\Utilities.csproj">
       <Project>{fa9dc35c-2a8b-4ad6-b961-a2e6ef1f6e4a}</Project>
       <Name>Utilities</Name>
