@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace NTestController
 {
@@ -17,7 +18,7 @@ namespace NTestController
         public string CPU { get; set; }
 
         /// <see cref="IPlatform.Computers"/>
-        public List<IComputer> Computers { get; } = new List<IComputer>();
+        public IList<IComputer> Computers { get; } = new List<IComputer>();
 
         #endregion Members from IPlatform
     }

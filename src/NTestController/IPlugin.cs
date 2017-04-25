@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using NTestController.Factories;
 
 namespace NTestController
 {
@@ -16,6 +17,8 @@ namespace NTestController
     {
         string Name { get; }
         PluginType PluginType { get; }
+        IComputerFactory ComputerFactory { get; }
+        IPlatformFactory PlatformFactory { get; }
 
         /// <summary>
         /// Execute this plugin instance.
@@ -26,7 +29,7 @@ namespace NTestController
     public interface IReaderPlugin : IPlugin
     {
         string TestInputFile { get; set; }
-        List<Test> Tests { get; }
+        IList<Test> Tests { get; }
     }
 
     public interface IReporterPlugin : IPlugin

@@ -56,7 +56,7 @@ namespace Utilities
         /// <exception cref="XmlException">There was an error parsing the XmlNode.</exception>
         public static string GetXmlAttributeOrDefault(XmlNode node, XmlNode defaultsNode, string attributeName)
         {
-            if (node.Attributes?[attributeName] != null)
+            if (node?.Attributes?[attributeName] != null)
             {
                 return GetXmlAttribute(node, attributeName);
             }
@@ -92,6 +92,8 @@ namespace Utilities
         /// <returns>The child node, or null if not found.</returns>
         public static XmlNode FindFirstChildByName(XmlNode parentNode, string name)
         {
+            ThrowIf.ArgumentNull(parentNode, nameof(parentNode));
+
             XmlNode child = null;
             XmlNode node = parentNode.FirstChild;
 

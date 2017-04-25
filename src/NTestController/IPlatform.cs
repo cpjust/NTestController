@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace NTestController
 {
@@ -24,7 +23,7 @@ namespace NTestController
         /// <summary>
         /// The list of Computers for this Platform.
         /// </summary>
-        List<IComputer> Computers { get; }
+        IList<IComputer> Computers { get; }
     }
 }
 

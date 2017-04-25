@@ -3,6 +3,8 @@ using NTestController;
 using Utilities;
 using System.Collections.Generic;
 using System.IO;
+using NTestController.Factories;
+using NUnitReader.Factories;
 
 [assembly: CLSCompliant(true)]
 [assembly: System.Runtime.InteropServices.ComVisible(false)]
@@ -12,7 +14,7 @@ namespace NUnitReader
     {
         public string TestInputFile { get; set; }
 
-        public List<Test> Tests { get; } = new List<Test>();
+        public IList<Test> Tests { get; } = new List<Test>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NUnitReader.NUnitReaderPlugin"/> class.
@@ -29,6 +31,8 @@ namespace NUnitReader
 
         public string Name => nameof(NUnitReader);
         public PluginType PluginType => PluginType.TestReader;
+        public IComputerFactory ComputerFactory { get { return new NUnitComputerFactory(); } }
+        public IPlatformFactory PlatformFactory { get { return new NUnitPlatformFactory(); } }
 
         /// <seealso cref="IPlugin.Execute()"/>
         public bool Execute()

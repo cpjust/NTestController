@@ -35,6 +35,8 @@
     <CodeAnalysisRuleSet>..\AlmostAllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Factories\IComputerFactory.cs" />
+    <Compile Include="Factories\IPlatformFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Computer.cs" />
     <Compile Include="Platform.cs" />

@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Xml;
 using Logger;
 using NTestController;
+using NTestController.Factories;
 using NUnitReader;
+using NUnitReader.Factories;
 using Utilities;
 
 namespace NUnitExecutor
@@ -13,7 +16,7 @@ namespace NUnitExecutor
     {
         private static ILogger Log { get; } = ConsoleLogger.Instance;
 
-        private string NunitPath => Computer.NunitPath;
+        private string NunitPath => ((NUnitComputer)Computer).NunitPath;
         private string _xmlConfig;
 
         #region Constructors
@@ -31,18 +34,12 @@ namespace NUnitExecutor
 
         #endregion Constructors
 
-        #region Inherited from IExecutorPlugin
+        #region Inherited from IPlugin
 
         public string Name { get; private set; }
-
-        public PluginType PluginType
-        {
-            get { return PluginType.TestExecutor; }
-        }
-
-        public IReadOnlyOptions Options { get; set; }
-        public IComputer Computer { get; set; }
-        public TestQueue TestQueue { get; set; }
+        public PluginType PluginType { get { return PluginType.TestExecutor; } }
+        public IComputerFactory ComputerFactory { get { return new NUnitComputerFactory(); } }
+        public IPlatformFactory PlatformFactory { get { return new NUnitPlatformFactory(); } }
 
         /// <seealso cref="IPlugin.Execute()"/>
         public bool Execute()
@@ -61,6 +58,14 @@ namespace NUnitExecutor
 
             return true;
         }
+
+        #endregion Inherited from IPlugin
+
+        #region Inherited from IExecutorPlugin
+
+        public IReadOnlyOptions Options { get; set; }
+        public IComputer Computer { get; set; }
+        public TestQueue TestQueue { get; set; }
 
         /// <seealso cref="IExecutorPlugin.ClonePlugin()"/>
         public IExecutorPlugin ClonePlugin()
@@ -144,7 +149,7 @@ namespace NUnitExecutor
             Log.WriteInfo("----- Test: '{0}'  Status = {1} on {2}", test.TestName, testResult.Result, Computer.Hostname);
         }
 
-        private void ParseNunitResults(string xmlOutputFile, TestResult testResult)
+        private static void ParseNunitResults(string xmlOutputFile, TestResult testResult)
         {
             // TODO: Implement this properly by creating a single result for each individual test.
 
@@ -152,15 +157,15 @@ namespace NUnitExecutor
 
             XmlNode testResultsNode = XmlUtils.FindFirstChildByName(xmlDoc, "test-results");
 
-//            int totalTests = int.Parse(XmlUtils.GetXmlAttribute(testResultsNode, "total"));
-            int errors = int.Parse(XmlUtils.GetXmlAttribute(testResultsNode, "errors"));
-            int failures = int.Parse(XmlUtils.GetXmlAttribute(testResultsNode, "failures"));
-//            int notRun = int.Parse(XmlUtils.GetXmlAttribute(testResultsNode, "not-run"));
-//            int inconclusive = int.Parse(XmlUtils.GetXmlAttribute(testResultsNode, "inconclusive"));
-//            int ignored = int.Parse(XmlUtils.GetXmlAttribute(testResultsNode, "ignored"));
-//            int skipped = int.Parse(XmlUtils.GetXmlAttribute(testResultsNode, "skipped"));
-//            int invalid = int.Parse(XmlUtils.GetXmlAttribute(testResultsNode, "invalid"));
-            TimeSpan totalTime = TimeSpan.Parse(XmlUtils.GetXmlAttribute(testResultsNode, "time"));
+//            int totalTests = int.Parse(XmlUtils.GetXmlAttribute(testResultsNode, "total"), CultureInfo.InvariantCulture);
+            int errors = int.Parse(XmlUtils.GetXmlAttribute(testResultsNode, "errors"), CultureInfo.InvariantCulture);
+            int failures = int.Parse(XmlUtils.GetXmlAttribute(testResultsNode, "failures"), CultureInfo.InvariantCulture);
+//            int notRun = int.Parse(XmlUtils.GetXmlAttribute(testResultsNode, "not-run"), CultureInfo.InvariantCulture);
+//            int inconclusive = int.Parse(XmlUtils.GetXmlAttribute(testResultsNode, "inconclusive"), CultureInfo.InvariantCulture);
+//            int ignored = int.Parse(XmlUtils.GetXmlAttribute(testResultsNode, "ignored"), CultureInfo.InvariantCulture);
+//            int skipped = int.Parse(XmlUtils.GetXmlAttribute(testResultsNode, "skipped"), CultureInfo.InvariantCulture);
+//            int invalid = int.Parse(XmlUtils.GetXmlAttribute(testResultsNode, "invalid"), CultureInfo.InvariantCulture);
+            TimeSpan totalTime = TimeSpan.Parse(XmlUtils.GetXmlAttribute(testResultsNode, "time"), CultureInfo.InvariantCulture);
 
             testResult.ExecutionTime = totalTime.TotalMilliseconds;
             testResult.Result = (errors + failures) == 0 ? TestResult.ExitResult.Pass : TestResult.ExitResult.Fail;
