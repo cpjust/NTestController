@@ -36,7 +36,6 @@ namespace NUnitTestExtractor
                         if (!Directory.Exists(_options.Output))
                         {
                             Directory.CreateDirectory(_options.Output);
-                            Console.WriteLine("created directory at {0}", _options.Output);
                         }
                     }
 
@@ -47,69 +46,39 @@ namespace NUnitTestExtractor
                         try
                         {
                             level = (Level)Enum.Parse(typeof(Level), _options.Level, true);
+
                             GetTests(_options.DLLs, level);
                             //WriteToTxtFile("file", _options.Output, _options.DLLs, TestList(_options.DLLs, level));
                         }
                         catch (ArgumentException e)
                         {
-                            Console.WriteLine("ArgumentException: Please enter either Namespace, Class, or Function for level");
-                            Console.WriteLine(e);
+                            Console.Error.WriteLine(e.GetType() + ": Please enter either Namespace, Class, or Function for level");
+                            Environment.Exit(-1);
                         }
                     }
                 }
             }
         }
-        //While reflection is not implemented this method writes path of dll if it exists with specified level to txt file
-        private static void WriteToTxtFile(string name, string outputDirectory, string dll, string data)
+        /// <summary>
+        /// While reflection is not implemented method writes each dll verified to be existing to either a txt file or stdout along with the specified level
+        /// </summary>
+        /// <param name="name"> the name of the txt file that data is being appended to </param>
+        /// <param name="outputDirectory"> the directory in that the file is being saved to </param>
+        /// <param name="dllDirectories"> list of all dll directories which the user wishes to append to a file or stdout </param>
+        /// <param name="level"> Specifies the level of granuality to use for the output tests entered by user. </param>
+        private static void WriteTestDllAndName(string name, string outputDirectory, string dll, string data)
         {
+            StreamWriter writer;
             if(outputDirectory == null)
             {
-                Console.WriteLine("No output directory specified, writing to stdout");
-                Console.Out.WriteLine("{0}|{1}", dll, data);
+                writer = new StreamWriter(Console.OpenStandardOutput());
             }
             else
             {
-                File.AppendAllText(outputDirectory + name + ".txt", dll + "|" + data + Environment.NewLine);
+                writer = new StreamWriter(outputDirectory + name + ".txt", true);
             }
-
-            /*
-            //user entered some dlls
-            if (dllDirectories.Count != 0)
-            {
-                if (outputDirectory == null)
-                {
-                    Console.WriteLine("No output directory specified, writing to stdout");
-                    foreach (string dll in dllDirectories)
-                    {
-                        if (File.Exists(dll))
-                        {
-                            Console.Out.WriteLine("{0}|{1}", dll, level);
-                        }
-                        else
-                        {
-                            Console.Out.WriteLine("Error: {0} file cannot be found on system", dll);
-                        }
-                    }
-                }
-                else
-                {
-                    foreach (string dll in dllDirectories)
-                    {
-                        if (File.Exists(dll))
-                        {
-                            File.AppendAllText(outputDirectory + name + ".txt", dll + "|" + level + Environment.NewLine);
-                        }
-                        else
-                        {
-                            Console.WriteLine("Error: {0} file cannot be found on system", dll);
-                        }
-                    }
-                }
-            }
-            else
-            {
-                Console.WriteLine("Error: no dlls specified");
-            }*/
+            writer.Write(dll + "|" +data);
+            writer.Close();
         }
 
         private static void GetTests(IList<string> dlls, Level level)
@@ -143,7 +112,7 @@ namespace NUnitTestExtractor
                                         value = methodInfo.DeclaringType + "." + methodInfo;
                                         break;
                                 }
-                                WriteToTxtFile("file", _options.Output, dll, value);
+                                WriteTestDllAndName("file", _options.Output, dll, value);
                             }
                         }
                     }
