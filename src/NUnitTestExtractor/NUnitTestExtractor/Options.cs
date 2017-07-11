@@ -15,6 +15,8 @@ namespace NUnitTestExtractor
             HelpText = "The specifies the output file")]
         public string Output { get; set; }
 
+        //Throws NullReferenceException if set is removed
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         [ValueList(typeof(List<string>))]
         public IList<string> DLLs { get; set; }
 
