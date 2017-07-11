@@ -41,14 +41,11 @@ namespace NUnitTestExtractor
 
                     if (_options.Level != null)
                     {
-                       
-
                         try
                         {
                             level = (Level)Enum.Parse(typeof(Level), _options.Level, true);
 
                             GetTests(_options.DLLs, level);
-                            //WriteToTxtFile("file", _options.Output, _options.DLLs, TestList(_options.DLLs, level));
                         }
                         catch (ArgumentException e)
                         {
@@ -60,46 +57,51 @@ namespace NUnitTestExtractor
             }
         }
         /// <summary>
-        /// While reflection is not implemented method writes each dll verified to be existing to either a txt file or stdout along with the specified level
+        /// Writes each DLL file path along with either a namespace, class or function which contains tests(dependent on level specified by user)
         /// </summary>
         /// <param name="name"> the name of the txt file that data is being appended to </param>
         /// <param name="outputDirectory"> the directory in that the file is being saved to </param>
         /// <param name="dllDirectories"> list of all dll directories which the user wishes to append to a file or stdout </param>
         /// <param name="level"> Specifies the level of granuality to use for the output tests entered by user. </param>
-        private static void WriteTestDllAndName(string name, string outputDirectory, string dll, string data)
+        private static void WriteTestDllAndName(StreamWriter writer, string dll, string data)
         {
-            StreamWriter writer;
-            if(outputDirectory == null)
+            using (writer)
             {
-                writer = new StreamWriter(Console.OpenStandardOutput());
-            }
-            else
-            {
-                writer = new StreamWriter(outputDirectory + name + ".txt", true);
-            }
-            writer.Write(dll + "|" +data);
-            writer.Close();
+                writer.Write(dll + "|" + data + Environment.NewLine);
+            }           
         }
-
+        /// <summary>
+        /// Uses reflection in order to search user submitted dlls to find either namespaces, classes, or functions which contain tests, then uses WriteTestDllAndName() to
+        /// write data to either stdout or a txt file
+        /// </summary>
+        /// <param name="dlls">The dlls which are submitted by user</param>
+        /// <param name="level">Specifies the level of granuality to use for the output: either namepspace, class or function</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2001:AvoidCallingProblematicMethods", MessageId = "System.Reflection.Assembly.LoadFrom")]
         private static void GetTests(IList<string> dlls, Level level)
         {
             foreach(string dll in dlls)
             {
-                byte[] dllBytes = File.ReadAllBytes(dll);
-                var assembly = Assembly.Load(dllBytes);
+                Assembly assembly = null;
+                try
+                {
+                    assembly = Assembly.LoadFrom(dll);
+                }catch(FileNotFoundException e)
+                {
+                    Console.Error.WriteLine("{0}: file {1} was not found on system", e.GetType(), dll);
+                    continue;
+                }
+               
                 foreach (Type type in assembly.GetTypes())
                 {
-                    Console.WriteLine(type);
                     foreach (MethodInfo methodInfo in type.GetMethods())
                     {
                         var attributes = methodInfo.GetCustomAttributes(true);
                         foreach (var attr in attributes)
                         {
                             if (attr is NUnit.Framework.TestAttribute)
-                            {
-                                
+                            {                               
                                 string value = "";
-                                Console.WriteLine(type.Namespace);
+                                
                                 switch (level)
                                 {
                                     case Level.Namespace:
@@ -109,16 +111,25 @@ namespace NUnitTestExtractor
                                         value = methodInfo.DeclaringType.ToString();
                                         break;
                                     case Level.Function:
-                                        value = methodInfo.DeclaringType + "." + methodInfo;
+                                        string method = methodInfo.ToString().Substring(methodInfo.ToString().IndexOf(" ", StringComparison.OrdinalIgnoreCase) + 1);
+                                        value = methodInfo.DeclaringType + "." + method;
                                         break;
                                 }
-                                WriteTestDllAndName("file", _options.Output, dll, value);
+                                StreamWriter writer;
+                                if (_options.Output== null)
+                                {
+                                    writer = new StreamWriter(Console.OpenStandardOutput());
+                                }
+                                else
+                                {
+                                    writer = new StreamWriter(_options.Output+ "file.txt", true);
+                                }
+                                WriteTestDllAndName(writer, dll, value);
                             }
                         }
                     }
                 }      
             }
-            
         }
     }
 }
