@@ -60,7 +60,7 @@ namespace NUnitTestExtractor
         /// <param name="name"> the name of the txt file that data is being appended to </param>
         /// <param name="outputDirectory"> the directory in that the file is being saved to </param>
         /// <param name="dllDirectories"> list of all dll directories which the user wishes to append to a file or stdout </param>
-        /// <param name="level"> Specifies the level of granuality to use for the output tests entered by user </param>
+        /// <param name="level"> Specifies the level of granuality to use for the output tests entered by user. </param>
         private static void WriteTestDllAndName(string name, string outputDirectory, IList<string> dllDirectories, Level level)
         {
             //user entered some dlls
