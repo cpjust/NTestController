@@ -7,10 +7,11 @@ using CommandLine;
 using System.IO;
 using System.Reflection;
 using NUnit;
+using System.Diagnostics;
 
 namespace NUnitTestExtractor
 {
-    class Program
+    class NUnitTestExtractorApp
     {
         private static Options _options = new Options();
 
@@ -33,15 +34,16 @@ namespace NUnitTestExtractor
                    
                     if(_options.Output != null)
                     {
-                        if (Path.GetExtension(_options.Output) != ".txt")
+                        string directory = null;
+
+                        int index = _options.Output.LastIndexOf("/", StringComparison.OrdinalIgnoreCase);
+
+                        if (index > 0)
                         {
-                            Console.Error.WriteLine("Error: output must be into a *.txt file");
-                            Environment.Exit(-3);
-                        }
+                            directory = _options.Output.Substring(0, index);
+                        }  
 
-                        string directory = _options.Output.Substring(0, _options.Output.LastIndexOf("/", StringComparison.OrdinalIgnoreCase));
-
-                        if (!Directory.Exists(directory))
+                        if (directory!=null && !Directory.Exists(directory))
                         {
                             Directory.CreateDirectory(directory);
                         }
@@ -57,7 +59,7 @@ namespace NUnitTestExtractor
                         StreamWriter writer =null;
                         try
                         {
-                            level = (Level)Enum.Parse(typeof(Level), _options.Level, true);
+                            level = (Level)Enum.Parse(typeof(Level), _options.Level, ignoreCase: true);
 
                             if (_options.Output == null)
                             {
@@ -65,7 +67,7 @@ namespace NUnitTestExtractor
                             }
                             else
                             {
-                                writer = new StreamWriter(_options.Output, true);
+                                writer = new StreamWriter(_options.Output, append: true);
                             }
 
                             GetTests(_options.DLLs, level, writer);
@@ -83,7 +85,6 @@ namespace NUnitTestExtractor
                                 
                             }
                         }
-
                     }
                 }
             }
@@ -97,7 +98,7 @@ namespace NUnitTestExtractor
         /// <param name="data"> The test information corrosponding to the dll file </param>
         private static void WriteTestDllAndName(StreamWriter writer, string dll, string data)
         {
-            writer.Write(dll + "|" + data + Environment.NewLine);
+            writer.Write(dll + " | " + data + Environment.NewLine);
         }
 
         /// <summary>
@@ -110,6 +111,8 @@ namespace NUnitTestExtractor
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2001:AvoidCallingProblematicMethods", MessageId = "System.Reflection.Assembly.LoadFrom")]
         private static void GetTests(IList<string> dlls, Level level, StreamWriter writer)
         {
+            List<string> testsWritten = new List<string>();
+
             foreach(string dll in dlls)
             {
                 Assembly assembly = null;
@@ -131,34 +134,36 @@ namespace NUnitTestExtractor
 
                         foreach (var attr in attributes)
                         {
-                            //Console.WriteLine(attr);
                             if (attr is NUnit.Framework.TestAttribute || attr is NUnit.Framework.TestCaseAttribute)
                             {
-                                string value = "";
+                                string data = "";
                                 
                                 switch (level)
                                 {
                                     case Level.Namespace:
-                                        value = type.Namespace;
+                                        data = type.Namespace;
                                         break;
 
                                     case Level.Class:
-                                        value = methodInfo.DeclaringType.ToString();
+                                        data = methodInfo.DeclaringType.ToString();
                                         break;
 
                                     case Level.Function:
-                                        string method = methodInfo.ToString().Substring(methodInfo.ToString().IndexOf(" ", StringComparison.OrdinalIgnoreCase) + 1);
-                                        value = methodInfo.DeclaringType + "." + method;
+                                        data = methodInfo.DeclaringType + "." + methodInfo.Name;
                                         break;
                                 }
 
-                                WriteTestDllAndName(writer, dll, value);
+                                //Prevent duplicate entries from being written
+                                if (!testsWritten.Contains(data))
+                                {
+                                    WriteTestDllAndName(writer, dll, data);
+                                    testsWritten.Add(data);
+                                }
                             }
                         }
                     }
                 }      
             }
-            writer.Close();
         }
     }
 }
