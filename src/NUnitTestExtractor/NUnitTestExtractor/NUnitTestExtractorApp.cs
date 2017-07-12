@@ -159,13 +159,13 @@ namespace NUnitTestExtractor
                 }      
             }
         }
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", MessageId = "string")]
-        public static Level ParseLevel(string levelString)
+
+        public static Level ParseLevel(string levelToParse)
         {
             Level level = Level.Null;
             try
             {
-                level = (Level)Enum.Parse(typeof(Level), levelString, ignoreCase: true);
+                level = (Level)Enum.Parse(typeof(Level), levelToParse, ignoreCase: true);
             }
             catch(ArgumentException e)
             {
