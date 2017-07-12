@@ -11,11 +11,11 @@ using System.Diagnostics;
 
 namespace NUnitTestExtractor
 {
-    class NUnitTestExtractorApp
+    public static class NUnitTestExtractorApp
     {
         private static Options _options = new Options();
 
-        private enum Level { Namespace, Class, Function, Null }
+        public enum Level { Namespace, Class, Function, Null }
 
         static void Main(string[] args)
         {
@@ -56,11 +56,10 @@ namespace NUnitTestExtractor
 
                     if (_options.Level != null)
                     {
-                        StreamWriter writer =null;
+                        StreamWriter writer = null;
+                        level = ParseLevel(_options.Level);
                         try
                         {
-                            level = (Level)Enum.Parse(typeof(Level), _options.Level, ignoreCase: true);
-
                             if (_options.Output == null)
                             {
                                 writer = new StreamWriter(Console.OpenStandardOutput());
@@ -71,11 +70,6 @@ namespace NUnitTestExtractor
                             }
 
                             GetTests(_options.DLLs, level, writer);
-                        }
-                        catch (ArgumentException e)
-                        {
-                            Console.Error.WriteLine(e.GetType() + ": Please enter either Namespace, Class, or Function for level");
-                            Environment.Exit(-1);
                         }
                         finally
                         {
@@ -109,7 +103,7 @@ namespace NUnitTestExtractor
         /// <param name="level">Specifies the level of granuality to use for the output: either namepspace, class or function</param>
         /// <param name="writer">The StreamWriter which will be passed to WriteTestDllAndName() </param>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2001:AvoidCallingProblematicMethods", MessageId = "System.Reflection.Assembly.LoadFrom")]
-        private static void GetTests(IList<string> dlls, Level level, StreamWriter writer)
+        public static void GetTests(IList<string> dlls, Level level, StreamWriter writer)
         {
             List<string> testsWritten = new List<string>();
 
@@ -164,6 +158,21 @@ namespace NUnitTestExtractor
                     }
                 }      
             }
+        }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", MessageId = "string")]
+        public static Level ParseLevel(string levelString)
+        {
+            Level level = Level.Null;
+            try
+            {
+                level = (Level)Enum.Parse(typeof(Level), levelString, ignoreCase: true);
+            }
+            catch(ArgumentException e)
+            {
+                Console.Error.WriteLine(e.GetType() + ": Please enter either Namespace, Class, or Function for level");
+                Environment.Exit(-1);
+            }
+            return level;
         }
     }
 }
