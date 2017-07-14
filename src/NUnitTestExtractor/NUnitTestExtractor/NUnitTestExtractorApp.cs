@@ -8,6 +8,7 @@ using System.IO;
 using System.Reflection;
 using NUnit;
 using System.Diagnostics;
+using NUnit.Framework;
 
 namespace NUnitTestExtractor
 {
@@ -15,7 +16,7 @@ namespace NUnitTestExtractor
     {
         private static Options _options = new Options();
 
-        public enum Level { Namespace, Class, Function, Null }
+        public enum Level { Namespace, Class, Function, TestCase, Null }
 
         static void Main(string[] args)
         {
@@ -131,9 +132,12 @@ namespace NUnitTestExtractor
 
                             foreach (var attr in attributes)
                             {
-                                if (attr is NUnit.Framework.TestAttribute || attr is NUnit.Framework.TestCaseAttribute)
+                                TestAttribute test = attr as TestAttribute;
+                                TestCaseAttribute testCase = attr as TestCaseAttribute;
+
+                                if (test != null || testCase != null)
                                 {
-                                    string data = "";
+                                    string data = string.Empty;
 
                                     switch (level)
                                     {
@@ -147,6 +151,50 @@ namespace NUnitTestExtractor
 
                                         case Level.Function:
                                             data = methodInfo.DeclaringType + "." + methodInfo.Name;
+                                            break;
+
+                                        case Level.TestCase:
+
+                                            data = methodInfo.DeclaringType + "." + methodInfo.Name + "(";
+
+                                            int count = testCase.Arguments.Length;
+
+                                            for(int i = 0; i < count; i++)
+                                            {
+                                                var arg = testCase.Arguments[i];
+                                               
+                                                //if null move on to next arg
+                                                if(arg == null)
+                                                {
+                                                    continue;
+                                                }
+
+                                                string argString = arg as string;
+
+                                                //if its not last(dont need comma) and if the arg after it is not null(also dont need a comma)
+                                                if(i != count - 1 && testCase.Arguments[i+1] != null)
+                                                {
+                                                    //if string add quotes to signify that it is a string
+                                                    if(argString != null)
+                                                    {
+                                                        data += "\"" + arg + "\", ";
+                                                    }
+                                                }
+                                                
+                                                else if(count == 1 || i == count - 1)
+                                                {
+                                                    if(argString != null)
+                                                    {
+                                                        data += "\"" + arg + "\"";
+                                                    }
+                                                    else
+                                                    {
+                                                        data += arg;
+                                                    }
+;                                               }
+                                            }
+                                            data += ")";
+                                            
                                             break;
                                     }
 

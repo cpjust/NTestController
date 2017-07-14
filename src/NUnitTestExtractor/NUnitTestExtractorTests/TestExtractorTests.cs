@@ -193,7 +193,7 @@ namespace NUnitTestExtractorTests
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic")]
-        [TestCase("NAMESPACE")]
+        [TestCase("NAMESPACE", Result = "bleh")]
         [TestCase("namespace")]
         [TestCase("NaMeSpAcE")]
         [Test]
