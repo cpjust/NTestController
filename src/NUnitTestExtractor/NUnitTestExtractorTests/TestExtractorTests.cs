@@ -43,15 +43,15 @@ namespace NUnitTestExtractorTests
             switch (myLevel)
             {
                 case NUnitTestExtractorApp.Level.Namespace:
-                    regex = new Regex(@"^(\""(.+)""\s+)\|\s\w+$");
+                    regex = new Regex(@"^(\""(.+)""\s+)\|\s+\w+$");
                     break;
 
                 case NUnitTestExtractorApp.Level.Class:
-                    regex = new Regex(@"^(\""(.+)""\s+)\|\s\w+\.\w+$");
+                    regex = new Regex(@"^(\""(.+)""\s+)\|\s+\w+\.\w+$");
                     break;
 
                 case NUnitTestExtractorApp.Level.Function:
-                    regex = new Regex(@"^(\""(.+)""\s+)\|\s\w+\.\w+\.\w+$");
+                    regex = new Regex(@"^(\""(.+)""\s+)\|\s+\w+\.\w+\.\w+$");
                     break;
             }
             return regex;
