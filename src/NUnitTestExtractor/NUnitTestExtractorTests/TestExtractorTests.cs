@@ -205,6 +205,40 @@ namespace NUnitTestExtractorTests
         {
             Assert.AreEqual((NUnitTestExtractorApp.Level.Function), NUnitTestExtractorApp.ParseLevel(level));
         }
+
+        [TestCase(new object[] { 2.34 })]
+        [TestCase(new object[] { "text" })]
+        [TestCase(new object[] { 2 })]
+        public static void WritingTestCaseArgs_ArgIsSingleValidDataType_WritesWithoutError(object[] array)
+        {
+            if(array != null)
+            {
+                string data = string.Empty;
+                data = NUnitTestExtractorApp.AppendArgumentsForTestCasesToString(array, data);
+
+                object expectedValue = null;
+                
+                object value = array[0];
+
+                switch (value.GetType().ToString())
+                {
+                    case "System.Int32":
+                        expectedValue = int.Parse(data, CultureInfo.CurrentCulture);
+                        break;
+
+                    case "System.String":
+                        expectedValue = data;
+                        value = "\"" + value + "\"";
+                        break;
+
+                    case "System.Double":
+                        expectedValue = double.Parse(data, CultureInfo.CurrentCulture);
+                        break;
+                }
+
+                Assert.AreEqual(value, expectedValue);
+            }
+        }
     }
 
     public class ValidDataTestCasesCollection : IEnumerable<string[]>

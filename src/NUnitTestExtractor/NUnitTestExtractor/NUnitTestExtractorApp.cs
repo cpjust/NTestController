@@ -155,57 +155,17 @@ namespace NUnitTestExtractor
 
                                         case Level.TestCase:
                                             
-                                            if(testCase != null)
+                                            if(testCase != null && testCase.Arguments.Length > 0)
                                             {
-                                                int count = testCase.Arguments.Length;
                                                 data = methodInfo.DeclaringType + "." + methodInfo.Name + "(";
-
-                                                for (int i = 0; i < count; i++)
-                                                {
-                                                    var arg = testCase.Arguments[i];
-
-                                                    //if null move on to next arg
-                                                    if (arg == null)
-                                                    {
-                                                        continue;
-                                                    }
-
-                                                    string argString = arg as string;
-
-                                                    //if its not last(dont need comma) and if the arg after it is not null(also dont need a comma)
-                                                    if (i != count - 1 && testCase.Arguments[i + 1] != null)
-                                                    {
-                                                        //if string add quotes to signify that it is a string
-                                                        if (argString != null)
-                                                        {
-                                                            data += "\"" + arg + "\", ";
-                                                        }
-                                                    }
-
-                                                    else if (count == 1 || i == count - 1)
-                                                    {
-                                                        if (argString != null)
-                                                        {
-                                                            data += "\"" + arg + "\"";
-                                                        }
-                                                        else
-                                                        {
-                                                            data += arg;
-                                                        }
-    ;
-                                                    }
-                                                }
+                                                data = AppendArgumentsForTestCasesToString(testCase.Arguments, data);
                                                 data += ")";
                                             }
-                                            
                                             break;
-
-
-
                                     }
 
                                     //Prevent duplicate entries from being written
-                                    if (!testsWritten.Contains(data))
+                                    if (!string.IsNullOrEmpty(data) && !testsWritten.Contains(data))
                                     {
                                         WriteTestDllAndName(writer, dll, data);
                                         testsWritten.Add(data);
@@ -223,6 +183,11 @@ namespace NUnitTestExtractor
             
         }
 
+        /// <summary>
+        /// Parses string into proper Level
+        /// </summary>
+        /// <param name="levelToParse">The string to parse</param>
+        /// <returns>The Level from parsing the string</returns>
         public static Level ParseLevel(string levelToParse)
         {
             Level level = Level.Null;
@@ -237,5 +202,67 @@ namespace NUnitTestExtractor
             }
             return level;
         }
+
+        /// <summary>
+        /// Appends all of a TestCase's arguments to a string
+        /// </summary>
+        /// <param name="args">array of arguments to append to string</param>
+        /// <param name="data">the string to add to and also return</param>
+        /// <returns>all of the arguments in a string with proper formatting</returns>
+        public static string AppendArgumentsForTestCasesToString(object[] args, string data)
+        {
+            if(args != null)
+            {
+                int count = args.Length;
+
+                for (int i = 0; i < args.Length; i++)
+                {
+                    var arg = args[i];
+
+                    string argString = null;
+
+                    if (arg != null)
+                        argString = arg as string;
+
+                    //if its not last(dont need comma) and if the arg after it is not null(also dont need a comma)
+                    if (i != count - 1)
+                    {
+                        //if string add quotes to signify that it is a string
+                        if (argString != null)
+                        {
+                            data += "\"" + arg + "\", ";
+                        }
+                        else if (arg == null)
+                        {
+                            data += "null" + ", ";
+                        }
+                        else
+                        {
+                            data += arg + ", ";
+                        }
+                    }
+
+                    else if (count == 1 || i == count - 1)
+                    {
+                        if (argString != null)
+                        {
+                            data += "\"" + arg + "\"";
+                        }
+                        else if (arg == null)
+                        {
+                            data += "null";
+                        }
+                        else
+                        {
+                            data += arg;
+                        }
+                    }
+                }
+              
+                return data;
+            }
+            throw new ArgumentNullException("args", "no args were specified");
+        }
+
     }
 }
