@@ -14,20 +14,47 @@ using System.Globalization;
 namespace NUnitTestExtractorTests
 {
     [TestFixture]
-    public class TestExtractorTests
+    public static class TestExtractorTests
     {
 
         /// <summary>
         /// Used to invoke the GetTests() method in NUnitTestExtractorApp
         /// </summary>
+        /// <param name="builder">The string builder which simulates a text file for testing purposes</param>
         /// <param name="dlls">The dlls to pass to GetTests()</param> 
         /// <param name="level">The level to pass to GetTests()</param>
-        private static void InvokeGetTestsUsingFileOutput(StringBuilder builder, List<string> dlls, NUnitTestExtractorApp.Level level)
+        private static void InvokeGetTestsSimulatingFileOutput(StringBuilder builder, List<string> dlls, NUnitTestExtractorApp.Level level)
         {
             using (StringWriter writer = new StringWriter(builder, CultureInfo.CurrentCulture))
             {
                 NUnitTestExtractorApp.GetTests(dlls, level, writer);
             }
+        }
+
+        /// <summary>
+        /// Determines which regex string return depending on the Level 
+        /// </summary>
+        /// <param name="myLevel">The level which to use to determine which regex to return</param>
+        /// <returns>The proper regex string format which is then used to compare strings to</returns>
+        private static Regex VerifyOutputFormat(NUnitTestExtractorApp.Level myLevel)
+        {
+            Regex regex = null;
+
+            switch (myLevel)
+            {
+                case NUnitTestExtractorApp.Level.Namespace:
+                    regex = new Regex(@"^(\w+)[\w+\s\|\s\w+$]");
+                    break;
+
+                case NUnitTestExtractorApp.Level.Class:
+                    regex = new Regex(@"^(\w+)[\w+\s\|\s\w+\.\w+$]");
+                    break;
+
+                case NUnitTestExtractorApp.Level.Function:
+                    regex = new Regex(@"^(\w+)[\w+\s\|\s\w+\.\w+\.\w+$]");
+                    break;
+            }
+            return regex;
         }
 
         /// <summary>
@@ -51,79 +78,58 @@ namespace NUnitTestExtractorTests
             return process;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic")]
         [TestCaseSource(typeof(InvalidDataTestCasesCollection))]
         [Test]
-        public void WritingToFile_InvalidDll_NothingWritten(string dll, string level)
+        public static void WritingToFile_InvalidDll_NothingWritten(string dll, string level)
         {
             List<string> dlls = new List<string>();
             dlls.Add(dll);
             
             StringBuilder builder = new StringBuilder();
 
-            InvokeGetTestsUsingFileOutput(builder, dlls, NUnitTestExtractorApp.ParseLevel(level));
+            InvokeGetTestsSimulatingFileOutput(builder, dlls, NUnitTestExtractorApp.ParseLevel(level));
 
             Assert.That(builder.ToString(), Is.Empty);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic")]
         [TestCaseSource(typeof(ValidDataTestCasesCollection))]
         [Test]
-        public void WritingToFile_ValidDllAndEveryLevel_GetsWrittenWithProperFormat(string dll, string level)
+        public static void WritingToFile_ValidDllAndEveryLevel_GetsWrittenWithProperFormat(string dll, string level)
         {
             List<string> dlls = new List<string>();
             dlls.Add(dll);
 
             StringBuilder builder = new StringBuilder();
 
-            InvokeGetTestsUsingFileOutput(builder, dlls, NUnitTestExtractorApp.ParseLevel(level));
+            InvokeGetTestsSimulatingFileOutput(builder, dlls, NUnitTestExtractorApp.ParseLevel(level));
 
             string builderText = builder.ToString();
-            string firstLine = builderText.Substring(0,builderText.IndexOf(Environment.NewLine, StringComparison.OrdinalIgnoreCase) + 1);
-
-            Regex regex = null;
+            string firstLine = builderText.Substring(0,builderText.IndexOf(Environment.NewLine, StringComparison.OrdinalIgnoreCase));
 
             NUnitTestExtractorApp.Level myLevel = NUnitTestExtractorApp.ParseLevel(level);
 
-            switch (myLevel)
-            {
-                case NUnitTestExtractorApp.Level.Namespace:
-                    regex = new Regex(@"\w+\s\|\s[^\.]");
-                    break;
-
-                case NUnitTestExtractorApp.Level.Class:
-                    regex = new Regex(@"\w+\s\|\s[^\.\.^\.]");
-                    break;
-
-                case NUnitTestExtractorApp.Level.Function:
-                    regex = new Regex(@"\w+\s\|\s[^\.\.^\.^\.]");
-                    break;
-            }
-
-            Assert.That(regex.IsMatch(firstLine));
+            Assert.That(VerifyOutputFormat(myLevel).IsMatch(firstLine));
         }
         
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic")]
         [TestCaseSource(typeof(ValidDataTestCasesCollection))]
         [Test]
-        public void WritingToFile_ValidDllAndEveryLevel_FileContainsNoDuplicates(string dll, string level)
+        public static void WritingToFile_ValidDllAndEveryLevel_FileContainsNoDuplicates(string dll, string level)
         {
             List<string> dlls = new List<string>();
             dlls.Add(dll);
 
             StringBuilder builder = new StringBuilder();
             
-            InvokeGetTestsUsingFileOutput(builder, dlls, NUnitTestExtractorApp.ParseLevel(level));
+            InvokeGetTestsSimulatingFileOutput(builder, dlls, NUnitTestExtractorApp.ParseLevel(level));
 
             string[] lines = builder.ToString().Split('\n');
            
             Assert.AreEqual(lines.Length, lines.Distinct().Count());
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic")]
         [TestCaseSource(typeof(ValidDataTestCasesCollection))]
         [Test]
-        public void WritingToStdout_ValidDllAndEveryLevel_GetsWrittenWithProperFormat(string dll, string level)
+        public static void WritingToStdout_ValidDllAndEveryLevel_GetsWrittenWithProperFormat(string dll, string level)
         {
             List<string> dlls = new List<string>();
             dlls.Add(dll);
@@ -132,33 +138,15 @@ namespace NUnitTestExtractorTests
             {
                 string line = process.StandardOutput.ReadLine();
 
-                Regex regex = null;
-
                 NUnitTestExtractorApp.Level myLevel = NUnitTestExtractorApp.ParseLevel(level);
 
-                switch (myLevel)
-                {
-                    case NUnitTestExtractorApp.Level.Namespace:
-                        regex = new Regex(@"\w+\s\|\s[^\.]");
-                        break;
-
-                    case NUnitTestExtractorApp.Level.Class:
-                        regex = new Regex(@"\w+\s\|\s[^\.\.^\.]");
-                        break;
-
-                    case NUnitTestExtractorApp.Level.Function:
-                        regex = new Regex(@"\w+\s\|\s[^\.\.^\.^\.]");
-                        break;
-                }
-
-                Assert.That(regex.IsMatch(line));
+                Assert.That(VerifyOutputFormat(myLevel).IsMatch(line));
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic")]
         [TestCaseSource(typeof(InvalidDataTestCasesCollection))]
         [Test]
-        public void WritingToStdout_InvalidDllAndEveryLevel_NothingWritten(string dll, string level)
+        public static void WritingToStdout_InvalidDllAndEveryLevel_NothingWritten(string dll, string level)
         {
             List<string> dlls = new List<string>();
             dlls.Add(dll);
@@ -169,10 +157,9 @@ namespace NUnitTestExtractorTests
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic")]
         [TestCaseSource(typeof(ValidDataTestCasesCollection))]
         [Test]
-        public void WritingToStdout_ValidDllAndEveryLevel_ContainsNoDuplicates(string dll, string level)
+        public static void WritingToStdout_ValidDllAndEveryLevel_ContainsNoDuplicates(string dll, string level)
         {
             List<string> dlls = new List<string>();
             dlls.Add(dll);
@@ -192,34 +179,31 @@ namespace NUnitTestExtractorTests
             } 
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic")]
         [TestCase("NAMESPACE")]
         [TestCase("namespace")]
         [TestCase("NaMeSpAcE")]
         [Test]
-        public void ParsingLevel_NamespaceWrittenInDifferentCases_WillParseWithoutError(string level)
+        public static void ParsingLevel_NamespaceWrittenInDifferentCases_WillParseWithoutError(string level)
         {
-            Assert.That(NUnitTestExtractorApp.ParseLevel(level), Is.EqualTo(NUnitTestExtractorApp.Level.Namespace));
+            Assert.AreEqual(NUnitTestExtractorApp.Level.Namespace, NUnitTestExtractorApp.ParseLevel(level));
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic")]
         [TestCase("CLASS")]
         [TestCase("class")]
         [TestCase("ClAsS")]
         [Test]
-        public void ParsingLevel_ClassWrittenInDifferentCases_WillParseWithoutError(string level)
+        public static void ParsingLevel_ClassWrittenInDifferentCases_WillParseWithoutError(string level)
         {
-            Assert.AreEqual(NUnitTestExtractorApp.ParseLevel(level), (NUnitTestExtractorApp.Level.Class));
+            Assert.AreEqual((NUnitTestExtractorApp.Level.Class), NUnitTestExtractorApp.ParseLevel(level));
         }
         
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic")]
         [TestCase("FUNCTION")]
         [TestCase("function")]
         [TestCase("FuNcTiOn")]
         [Test]
-        public void ParsingLevel_FunctionWrittenInDifferentCases_WillParseWithoutError(string level)
+        public static void ParsingLevel_FunctionWrittenInDifferentCases_WillParseWithoutError(string level)
         {
-            Assert.AreEqual(NUnitTestExtractorApp.ParseLevel(level), (NUnitTestExtractorApp.Level.Function));
+            Assert.AreEqual((NUnitTestExtractorApp.Level.Function), NUnitTestExtractorApp.ParseLevel(level));
         }
     }
 
