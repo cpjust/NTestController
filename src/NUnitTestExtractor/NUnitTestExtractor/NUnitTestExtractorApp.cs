@@ -154,48 +154,54 @@ namespace NUnitTestExtractor
                                             break;
 
                                         case Level.TestCase:
-
-                                            data = methodInfo.DeclaringType + "." + methodInfo.Name + "(";
-
-                                            int count = testCase.Arguments.Length;
-
-                                            for(int i = 0; i < count; i++)
+                                            
+                                            if(testCase != null)
                                             {
-                                                var arg = testCase.Arguments[i];
-                                               
-                                                //if null move on to next arg
-                                                if(arg == null)
-                                                {
-                                                    continue;
-                                                }
+                                                int count = testCase.Arguments.Length;
+                                                data = methodInfo.DeclaringType + "." + methodInfo.Name + "(";
 
-                                                string argString = arg as string;
-
-                                                //if its not last(dont need comma) and if the arg after it is not null(also dont need a comma)
-                                                if(i != count - 1 && testCase.Arguments[i+1] != null)
+                                                for (int i = 0; i < count; i++)
                                                 {
-                                                    //if string add quotes to signify that it is a string
-                                                    if(argString != null)
+                                                    var arg = testCase.Arguments[i];
+
+                                                    //if null move on to next arg
+                                                    if (arg == null)
                                                     {
-                                                        data += "\"" + arg + "\", ";
+                                                        continue;
+                                                    }
+
+                                                    string argString = arg as string;
+
+                                                    //if its not last(dont need comma) and if the arg after it is not null(also dont need a comma)
+                                                    if (i != count - 1 && testCase.Arguments[i + 1] != null)
+                                                    {
+                                                        //if string add quotes to signify that it is a string
+                                                        if (argString != null)
+                                                        {
+                                                            data += "\"" + arg + "\", ";
+                                                        }
+                                                    }
+
+                                                    else if (count == 1 || i == count - 1)
+                                                    {
+                                                        if (argString != null)
+                                                        {
+                                                            data += "\"" + arg + "\"";
+                                                        }
+                                                        else
+                                                        {
+                                                            data += arg;
+                                                        }
+    ;
                                                     }
                                                 }
-                                                
-                                                else if(count == 1 || i == count - 1)
-                                                {
-                                                    if(argString != null)
-                                                    {
-                                                        data += "\"" + arg + "\"";
-                                                    }
-                                                    else
-                                                    {
-                                                        data += arg;
-                                                    }
-;                                               }
+                                                data += ")";
                                             }
-                                            data += ")";
                                             
                                             break;
+
+
+
                                     }
 
                                     //Prevent duplicate entries from being written
