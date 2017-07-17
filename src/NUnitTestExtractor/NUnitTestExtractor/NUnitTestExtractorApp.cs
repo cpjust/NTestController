@@ -93,7 +93,7 @@ namespace NUnitTestExtractor
         /// <param name="data"> The test information corrosponding to the dll file </param>
         private static void WriteTestDllAndName(TextWriter writer, string dll, string data)
         {
-             writer.WriteLine(dll + " | " + data);
+             writer.WriteLine("\""+dll+"\"" + " | " + data);
              
         }
 
