@@ -11,11 +11,11 @@ using System.Diagnostics;
 
 namespace NUnitTestExtractor
 {
-    class NUnitTestExtractorApp
+    public static class NUnitTestExtractorApp
     {
         private static Options _options = new Options();
 
-        private enum Level { Namespace, Class, Function, Null }
+        public enum Level { Namespace, Class, Function, Null }
 
         static void Main(string[] args)
         {
@@ -56,11 +56,10 @@ namespace NUnitTestExtractor
 
                     if (_options.Level != null)
                     {
-                        StreamWriter writer =null;
+                        StreamWriter writer = null;
+                        level = ParseLevel(_options.Level);
                         try
                         {
-                            level = (Level)Enum.Parse(typeof(Level), _options.Level, ignoreCase: true);
-
                             if (_options.Output == null)
                             {
                                 writer = new StreamWriter(Console.OpenStandardOutput());
@@ -71,11 +70,6 @@ namespace NUnitTestExtractor
                             }
 
                             GetTests(_options.DLLs, level, writer);
-                        }
-                        catch (ArgumentException e)
-                        {
-                            Console.Error.WriteLine(e.GetType() + ": Please enter either Namespace, Class, or Function for level");
-                            Environment.Exit(-1);
                         }
                         finally
                         {
@@ -96,9 +90,10 @@ namespace NUnitTestExtractor
         /// <param name="writer"> StreamWriter used to write the dll path and data, either to a txt file or stdout </param>
         /// <param name="dll"> The dll path which is written </param>
         /// <param name="data"> The test information corrosponding to the dll file </param>
-        private static void WriteTestDllAndName(StreamWriter writer, string dll, string data)
+        private static void WriteTestDllAndName(TextWriter writer, string dll, string data)
         {
-            writer.Write(dll + " | " + data + Environment.NewLine);
+             writer.WriteLine("\""+dll+"\"" + " | " + data);
+             
         }
 
         /// <summary>
@@ -109,61 +104,84 @@ namespace NUnitTestExtractor
         /// <param name="level">Specifies the level of granuality to use for the output: either namepspace, class or function</param>
         /// <param name="writer">The StreamWriter which will be passed to WriteTestDllAndName() </param>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2001:AvoidCallingProblematicMethods", MessageId = "System.Reflection.Assembly.LoadFrom")]
-        private static void GetTests(IList<string> dlls, Level level, StreamWriter writer)
+        public static void GetTests(IList<string> dlls, Level level, TextWriter writer)
         {
             List<string> testsWritten = new List<string>();
-
-            foreach(string dll in dlls)
+            if(dlls != null)
             {
-                Assembly assembly = null;
-                try
+                foreach (string dll in dlls)
                 {
-                    assembly = Assembly.LoadFrom(dll);
-
-                }catch(FileNotFoundException e)
-                {
-                    Console.Error.WriteLine("{0}: file {1} was not found on system", e.GetType(), dll);
-                    continue;
-                }
-               
-                foreach (Type type in assembly.GetTypes())
-                {
-                    foreach (MethodInfo methodInfo in type.GetMethods())
+                    Assembly assembly = null;
+                    try
                     {
-                        var attributes = methodInfo.GetCustomAttributes(true);
+                        assembly = Assembly.LoadFrom(dll);
 
-                        foreach (var attr in attributes)
+                    }
+                    catch (FileNotFoundException e)
+                    {
+                        Console.Error.WriteLine("{0}: file {1} was not found on system", e.GetType(), dll);
+                        continue;
+                    }
+
+                    foreach (Type type in assembly.GetTypes())
+                    {
+                        foreach (MethodInfo methodInfo in type.GetMethods())
                         {
-                            if (attr is NUnit.Framework.TestAttribute || attr is NUnit.Framework.TestCaseAttribute)
+                            var attributes = methodInfo.GetCustomAttributes(true);
+
+                            foreach (var attr in attributes)
                             {
-                                string data = "";
-                                
-                                switch (level)
+                                if (attr is NUnit.Framework.TestAttribute || attr is NUnit.Framework.TestCaseAttribute)
                                 {
-                                    case Level.Namespace:
-                                        data = type.Namespace;
-                                        break;
+                                    string data = "";
 
-                                    case Level.Class:
-                                        data = methodInfo.DeclaringType.ToString();
-                                        break;
+                                    switch (level)
+                                    {
+                                        case Level.Namespace:
+                                            data = type.Namespace;
+                                            break;
 
-                                    case Level.Function:
-                                        data = methodInfo.DeclaringType + "." + methodInfo.Name;
-                                        break;
-                                }
+                                        case Level.Class:
+                                            data = methodInfo.DeclaringType.ToString();
+                                            break;
 
-                                //Prevent duplicate entries from being written
-                                if (!testsWritten.Contains(data))
-                                {
-                                    WriteTestDllAndName(writer, dll, data);
-                                    testsWritten.Add(data);
+                                        case Level.Function:
+                                            data = methodInfo.DeclaringType + "." + methodInfo.Name;
+                                            break;
+                                    }
+
+                                    //Prevent duplicate entries from being written
+                                    if (!testsWritten.Contains(data))
+                                    {
+                                        WriteTestDllAndName(writer, dll, data);
+                                        testsWritten.Add(data);
+                                    }
                                 }
                             }
                         }
                     }
-                }      
+                }
             }
+            else
+            {
+                throw new ArgumentNullException("dlls", "no dlls were specified");
+            }
+            
+        }
+
+        public static Level ParseLevel(string levelToParse)
+        {
+            Level level = Level.Null;
+            try
+            {
+                level = (Level)Enum.Parse(typeof(Level), levelToParse, ignoreCase: true);
+            }
+            catch(ArgumentException e)
+            {
+                Console.Error.WriteLine(e.GetType() + ": Please enter either Namespace, Class, or Function for level");
+                Environment.Exit(-1);
+            }
+            return level;
         }
     }
 }

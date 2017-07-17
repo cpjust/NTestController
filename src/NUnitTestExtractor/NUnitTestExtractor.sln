@@ -5,6 +5,8 @@ VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NUnitTestExtractor", "NUnitTestExtractor\NUnitTestExtractor.csproj", "{D0781EF3-1C14-41F7-B1CF-0CF45E986E6B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NUnitTestExtractorTests", "NUnitTestExtractorTests\NUnitTestExtractorTests.csproj", "{2EC2A349-A6F8-4F8E-88D3-9F0BD2CBA926}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{D0781EF3-1C14-41F7-B1CF-0CF45E986E6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D0781EF3-1C14-41F7-B1CF-0CF45E986E6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D0781EF3-1C14-41F7-B1CF-0CF45E986E6B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2EC2A349-A6F8-4F8E-88D3-9F0BD2CBA926}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2EC2A349-A6F8-4F8E-88D3-9F0BD2CBA926}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2EC2A349-A6F8-4F8E-88D3-9F0BD2CBA926}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2EC2A349-A6F8-4F8E-88D3-9F0BD2CBA926}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
