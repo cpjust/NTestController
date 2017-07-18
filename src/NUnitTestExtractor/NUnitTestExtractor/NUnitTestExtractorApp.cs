@@ -108,7 +108,10 @@ namespace NUnitTestExtractor
         public static void GetTests(IList<string> dlls, Level level, TextWriter writer)
         {
             List<string> testsWritten = new List<string>();
-            if(dlls != null)
+
+            List<string> categoryNames = new List<string>();
+
+            if (dlls != null)
             {
                 foreach (string dll in dlls)
                 {
@@ -130,6 +133,8 @@ namespace NUnitTestExtractor
                         {
                             var attributes = methodInfo.GetCustomAttributes(true);
 
+                            var categories = methodInfo.GetCustomAttributes(typeof(CategoryAttribute));
+                            
                             foreach (var attr in attributes)
                             {
                                 TestAttribute test = attr as TestAttribute;
@@ -137,35 +142,72 @@ namespace NUnitTestExtractor
 
                                 if (test != null || testCase != null)
                                 {
-                                    string data = string.Empty;
+                                    //adding categories from methods to list
+                                    AddMethodCategoriesToList(categoryNames, categories);
 
-                                    switch (level)
+                                    //adding categories from testcase into list
+                                    if (testCase != null && testCase.Categories != null)
                                     {
-                                        case Level.Namespace:
-                                            data = type.Namespace;
-                                            break;
-
-                                        case Level.Class:
-                                            data = methodInfo.DeclaringType.ToString();
-                                            break;
-
-                                        case Level.Function:
-                                            data = methodInfo.DeclaringType + "." + methodInfo.Name;
-                                            break;
-
-                                        case Level.TestCase:
-                                            data = FormattedTestCase(methodInfo.DeclaringType.ToString(), methodInfo.Name, testCase.Arguments, data);
-                                            break;
+                                        AddTestCaseCategoriesToList(categoryNames, testCase);
                                     }
 
-                                    //Prevent duplicate entries from being written
-                                    if (!string.IsNullOrEmpty(data) && !testsWritten.Contains(data))
+                                    bool include = true;
+                                    bool exclude = false;
+
+                                    if (!string.IsNullOrEmpty(_options.IncludeInfo))
                                     {
-                                        WriteTestDllAndName(writer, dll, data);
-                                        testsWritten.Add(data);
+                                        include = Include(categoryNames, _options.IncludeInfo);
+                                    }
+
+                                    if (!string.IsNullOrEmpty(_options.ExcludeInfo))
+                                    {
+                                        exclude = Exclude(categoryNames, _options.ExcludeInfo);
+                                    }
+
+                                    string data = string.Empty;
+
+                                    //If exclude is true then move on to next method as this one has category marked as exluded
+                                    if (exclude)
+                                    {
+                                        continue;
+                                    }
+                                    else if (include)
+                                    {
+                                        switch (level)
+                                        {
+                                            case Level.Namespace:
+                                                data = type.Namespace;
+                                                break;
+
+                                            case Level.Class:
+                                                data = methodInfo.DeclaringType.ToString();
+                                                break;
+
+                                            case Level.Function:
+                                                data = methodInfo.DeclaringType + "." + methodInfo.Name;
+                                                break;
+
+                                            case Level.TestCase:
+                                                if (testCase != null)
+                                                {
+                                                    data = FormattedTestCase(methodInfo.DeclaringType.ToString(), methodInfo.Name, testCase.Arguments, data);
+                                                }
+
+                                                break;
+                                        }
+
+                                        //Prevent duplicate entries from being written
+                                        if (!string.IsNullOrEmpty(data) && !testsWritten.Contains(data))
+                                        {
+                                            WriteTestDllAndName(writer, dll, data);
+                                            testsWritten.Add(data);
+                                        }
                                     }
                                 }
                             }
+                            
+                            //reset category name for next method
+                            categoryNames = new List<string>();
                         }
                     }
                 }
@@ -174,7 +216,88 @@ namespace NUnitTestExtractor
             {
                 throw new ArgumentNullException("dlls", "no dlls were specified");
             }
-            
+        }
+
+        /// <summary>
+        /// Add testCase categories to categoryNames 
+        /// </summary>
+        /// <param name="categoryNames">list to add to</param>
+        /// <param name="testCase">testCase used to get arguments from</param>
+        private static void AddTestCaseCategoriesToList(List<string> categoryNames, TestCaseAttribute testCase)
+        {
+            foreach (string category in testCase.Categories)
+            {
+                categoryNames.Add(category);
+            }
+        }
+
+        /// <summary>
+        /// Add method categories to list
+        /// </summary>
+        /// <param name="categoryNames">list to add to</param>
+        /// <param name="categories">categories to add to list</param>
+        private static void AddMethodCategoriesToList(List<string> categoryNames, IEnumerable<Attribute> categories)
+        {
+            foreach (var category in categories)
+            {
+                CategoryAttribute categoryAttr = (CategoryAttribute)category;
+
+                categoryNames.Add(categoryAttr.Name);
+            }
+        }
+
+        /// <summary>
+        /// Used to determine whether or not the current test/testcase should be included 
+        /// </summary>
+        /// <param name="categoryNames">List of categories to compare info to</param>
+        /// <param name="includeInfo">string of info used to compare to categoryNames</param>
+        /// <returns>returns false if includeInfo is inside of the categoryNames List, true otherwise</returns>
+        public static bool Include(IReadOnlyList<string> categoryNames, string includeInfo)
+        {
+            if (!string.IsNullOrEmpty(includeInfo))
+            {
+                includeInfo = includeInfo.Replace("\"", "");
+
+                List<string> includeInfoValues = new List<string>(includeInfo.Split(','));
+                
+                foreach (string value in includeInfoValues)
+                {
+                    if (categoryNames != null && !categoryNames.Contains(value))
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            throw new ArgumentNullException("includeInfo", "no includeInfo specified");
+
+        }
+
+        /// <summary>
+        /// Used to determine whether or not a test/testcase should be excluded or not
+        /// </summary>
+        /// <param name="categoryNames">List of categories to compare info to</param>
+        /// <param name="excludeInfo">string of info used to compare to categoryNames</param>
+        /// <returns>returns true if includeInfo is inside of the categoryNames List, false otherwise</returns>
+        public static bool Exclude(IReadOnlyList<string> categoryNames, string excludeInfo)
+        {
+            if (!string.IsNullOrEmpty(excludeInfo))
+            {
+                excludeInfo = excludeInfo.Replace("\"", "");
+
+                List<string> excludeInfoValues = new List<string>(excludeInfo.Split(','));
+
+                foreach (string value in excludeInfoValues)
+                {
+                    if (categoryNames != null && categoryNames.Contains(value))
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            throw new ArgumentNullException("excludeInfo", "no excludeInfo specified");
+
         }
 
         /// <summary>

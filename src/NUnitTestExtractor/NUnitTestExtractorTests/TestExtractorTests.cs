@@ -215,7 +215,7 @@ namespace NUnitTestExtractorTests
         {
             Assert.AreEqual((NUnitTestExtractorApp.Level.TestCase), NUnitTestExtractorApp.ParseLevel(level));
         }
-
+        
         [TestCase(new object[] { 2.34 })]
         [TestCase(new object[] { "text" })]
         [TestCase(new object[] { 2 })]
@@ -249,7 +249,7 @@ namespace NUnitTestExtractorTests
                 Assert.AreEqual(expectedValue, actualValue);
             }
         }
-
+       
         [Test]
         public static void WritingTestCase_NoArgs_WritesWithEmptyparentheses()
         {
@@ -263,9 +263,126 @@ namespace NUnitTestExtractorTests
 
             Assert.AreEqual("Namespace.Class.TestCase()", data);
         }
+        #region IncludeTests
+        [Test] 
+        public static void Include_SingleIncludeValueThatIsInCategoryList_ReturnsTrue()
+        {
+            List<string> categoryNames = new List<string>();
+
+            categoryNames.Add("category1");
+            categoryNames.Add("category2");
+            categoryNames.Add("category3");
+
+            string includeInfo = "category1";
+
+            Assert.That(NUnitTestExtractorApp.Include(categoryNames, includeInfo));
+        }
+
+        [Test]
+        public static void Include_SingleIncludeValueThatIsNotInCategoryList_ReturnsFalse()
+        {
+            List<string> categoryNames = new List<string>();
+
+            categoryNames.Add("category1");
+            categoryNames.Add("category2");
+            categoryNames.Add("category3");
+
+            string includeInfo = "category4";
+
+            Assert.That(!NUnitTestExtractorApp.Include(categoryNames, includeInfo));
+        }
+        [TestCase("category1,category2,category3")]
+        [TestCase("category1,category2")]
+        [Test]
+        public static void Include_MultipleIncludeValuesThatAreInCategoryList_ReturnsTrue(string includeInfo)
+        {
+            List<string> categoryNames = new List<string>();
+
+            categoryNames.Add("category1");
+            categoryNames.Add("category2");
+            categoryNames.Add("category3");
+
+            Assert.That(NUnitTestExtractorApp.Include(categoryNames, includeInfo));
+        }
+
+        [TestCase("category1,category2,category4")]
+        [TestCase("category1,category4")]
+        [Test]
+        public static void Include_MultipleIncludeValuesThatAreNotInCategoryList_ReturnsFalse(string includeInfo)
+        {
+            List<string> categoryNames = new List<string>();
+
+            categoryNames.Add("category1");
+            categoryNames.Add("category2");
+            categoryNames.Add("category3");
+
+            Assert.That(!NUnitTestExtractorApp.Include(categoryNames, includeInfo));
+        }
+        #endregion IncludeTests
+        #region ExcludeTests
+        [Test]
+        public static void Exclude_SingleExcludeValueThatIsInCategoryList_ReturnsTrue()
+        {
+            List<string> categoryNames = new List<string>();
+
+            categoryNames.Add("category1");
+            categoryNames.Add("category2");
+            categoryNames.Add("category3");
+
+            string excludeInfo = "category1";
+
+            Assert.That(NUnitTestExtractorApp.Include(categoryNames, excludeInfo));
+        }
+
+        [Test]
+        public static void Exclude_SingleExcludeValueThatIsNotInCategoryList_ReturnsFalse()
+        {
+            List<string> categoryNames = new List<string>();
+
+            categoryNames.Add("category1");
+            categoryNames.Add("category2");
+            categoryNames.Add("category3");
+
+            string excludeInfo = "category4";
+
+            Assert.That(!NUnitTestExtractorApp.Include(categoryNames, excludeInfo));
+        }
+
+        [TestCase("category1,category2,category3")]
+        [TestCase("category1,category2")]
+        [Test]
+        public static void Exclude_MultipleExcludeValuesThatAreInCategoryList_ReturnsTrue(string excludeInfo)
+        {
+            List<string> categoryNames = new List<string>();
+
+            categoryNames.Add("category1");
+            categoryNames.Add("category2");
+            categoryNames.Add("category3");
+
+            Assert.That(NUnitTestExtractorApp.Include(categoryNames, excludeInfo));
+        }
+
+        [TestCase("category1,category2,category4")]
+        [TestCase("category1,category4")]
+        [Test]
+        public static void Exclude_MultipleExcludeValuesThatAreNotInCategoryList_ReturnsFalse(string excludeInfo)
+        {
+            List<string> categoryNames = new List<string>();
+
+            categoryNames.Add("category1");
+            categoryNames.Add("category2");
+            categoryNames.Add("category3");
+
+            Assert.That(!NUnitTestExtractorApp.Include(categoryNames, excludeInfo));
+        }
+        #endregion ExcludeTests
+
+
+
     }
 
-   
+
+
 
 
     public class ValidDataTestCasesCollection : IEnumerable<string[]>
