@@ -8,6 +8,7 @@ using System.IO;
 using System.Reflection;
 using NUnit;
 using System.Diagnostics;
+using NUnit.Framework;
 
 namespace NUnitTestExtractor
 {
@@ -15,7 +16,7 @@ namespace NUnitTestExtractor
     {
         private static Options _options = new Options();
 
-        public enum Level { Namespace, Class, Function, Null }
+        public enum Level { Namespace, Class, Function, TestCase, Null }
 
         static void Main(string[] args)
         {
@@ -131,9 +132,12 @@ namespace NUnitTestExtractor
 
                             foreach (var attr in attributes)
                             {
-                                if (attr is NUnit.Framework.TestAttribute || attr is NUnit.Framework.TestCaseAttribute)
+                                TestAttribute test = attr as TestAttribute;
+                                TestCaseAttribute testCase = attr as TestCaseAttribute;
+
+                                if (test != null || testCase != null)
                                 {
-                                    string data = "";
+                                    string data = string.Empty;
 
                                     switch (level)
                                     {
@@ -148,10 +152,14 @@ namespace NUnitTestExtractor
                                         case Level.Function:
                                             data = methodInfo.DeclaringType + "." + methodInfo.Name;
                                             break;
+
+                                        case Level.TestCase:
+                                            data = FormattedTestCase(methodInfo.DeclaringType.ToString(), methodInfo.Name, testCase.Arguments, data);
+                                            break;
                                     }
 
                                     //Prevent duplicate entries from being written
-                                    if (!testsWritten.Contains(data))
+                                    if (!string.IsNullOrEmpty(data) && !testsWritten.Contains(data))
                                     {
                                         WriteTestDllAndName(writer, dll, data);
                                         testsWritten.Add(data);
@@ -169,6 +177,36 @@ namespace NUnitTestExtractor
             
         }
 
+        /// <summary>
+        /// Depending on number of args within the TestCase, function will return properly formatted testcase
+        /// </summary>
+        /// <param name="declaringType">declaring type of testcase method(namespace.class)</param>
+        /// <param name="name">name of testcase</param>
+        /// <param name="testCaseArgs">the object array containing the testcase's arguments</param>
+        /// <param name="data">the string which is appended to</param>
+        /// <returns>the properly formatted TestCase string</returns>
+        public static string FormattedTestCase(string declaringType, string name, object[] testCaseArgs, string data)
+        {
+
+            if (testCaseArgs != null && testCaseArgs.Length > 0)
+            {
+                data = declaringType + "." + name + "(";
+                data = AppendArgumentsForTestCasesToString(testCaseArgs, data);
+                data += ")";
+            }
+            else if (testCaseArgs != null && testCaseArgs.Length == 0)
+            {
+                data = declaringType + "." + name + "()";
+            }
+
+            return data;
+        }
+
+        /// <summary>
+        /// Parses string into proper Level
+        /// </summary>
+        /// <param name="levelToParse">The string to parse</param>
+        /// <returns>The Level from parsing the string</returns>
         public static Level ParseLevel(string levelToParse)
         {
             Level level = Level.Null;
@@ -182,6 +220,42 @@ namespace NUnitTestExtractor
                 Environment.Exit(-1);
             }
             return level;
+        }
+
+        /// <summary>
+        /// Appends all of a TestCase's arguments to a string
+        /// </summary>
+        /// <param name="args">array of arguments to append to string</param>
+        /// <param name="data">the string to add to and also return</param>
+        /// <returns>all of the arguments in a string with proper formatting</returns>
+        public static string AppendArgumentsForTestCasesToString(object[] args, string data)
+        {
+            if(args != null)
+            {
+                List<string> testArgs = new List<string>();
+                 
+                foreach(object arg in args)
+                {
+                    string argString = arg as string;
+
+                    if(argString != null)
+                    {
+                        testArgs.Add("\"" + arg + "\"");
+                    }
+                    else if (arg == null)
+                    {
+                        testArgs.Add("null");
+                    }
+                    else
+                    {
+                        testArgs.Add(arg.ToString());
+                    }                    
+                }
+                data += string.Join(", ", testArgs);
+
+                return data;
+            }
+            throw new ArgumentNullException("args", "no args were specified");
         }
     }
 }

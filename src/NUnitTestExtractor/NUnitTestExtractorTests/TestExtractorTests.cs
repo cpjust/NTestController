@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Collections;
 using System.Text.RegularExpressions;
 using System.Globalization;
+using System.Reflection;
 
 namespace NUnitTestExtractorTests
 {
@@ -205,7 +206,67 @@ namespace NUnitTestExtractorTests
         {
             Assert.AreEqual((NUnitTestExtractorApp.Level.Function), NUnitTestExtractorApp.ParseLevel(level));
         }
+
+        [TestCase("TESTCASE")]
+        [TestCase("testcase")]
+        [TestCase("TeStCaSe")]
+        [Test]
+        public static void ParsingLevel_TestCaseWrittenInDifferentCases_WillParseWithoutError(string level)
+        {
+            Assert.AreEqual((NUnitTestExtractorApp.Level.TestCase), NUnitTestExtractorApp.ParseLevel(level));
+        }
+
+        [TestCase(new object[] { 2.34 })]
+        [TestCase(new object[] { "text" })]
+        [TestCase(new object[] { 2 })]
+        public static void WritingTestCaseArgs_ArgIsSingleValidDataType_WritesWithoutError(object[] array)
+        {
+            if(array != null)
+            {
+                string data = string.Empty;
+                data = NUnitTestExtractorApp.AppendArgumentsForTestCasesToString(array, data);
+
+                object actualValue = null;
+                
+                object expectedValue = array[0];
+
+                switch (expectedValue.GetType().ToString())
+                {
+                    case "System.Int32":
+                        actualValue = int.Parse(data, CultureInfo.CurrentCulture);
+                        break;
+
+                    case "System.String":
+                        actualValue = data;
+                        expectedValue = "\"" + expectedValue + "\"";
+                        break;
+
+                    case "System.Double":
+                        actualValue = double.Parse(data, CultureInfo.CurrentCulture);
+                        break;
+                }
+
+                Assert.AreEqual(expectedValue, actualValue);
+            }
+        }
+
+        [Test]
+        public static void WritingTestCase_NoArgs_WritesWithEmptyparentheses()
+        {
+            object[] args = new object[] { };
+
+            string declaringType = "Namespace.Class";
+            string name = "TestCase";
+            string data = string.Empty;
+
+            data = NUnitTestExtractorApp.FormattedTestCase(declaringType, name, args, data);
+
+            Assert.AreEqual("Namespace.Class.TestCase()", data);
+        }
     }
+
+   
+
 
     public class ValidDataTestCasesCollection : IEnumerable<string[]>
     {
