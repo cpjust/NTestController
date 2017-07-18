@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.Collections;
 using System.Text.RegularExpressions;
 using System.Globalization;
+using System.Reflection;
 
 namespace NUnitTestExtractorTests
 {
@@ -206,6 +207,15 @@ namespace NUnitTestExtractorTests
             Assert.AreEqual((NUnitTestExtractorApp.Level.Function), NUnitTestExtractorApp.ParseLevel(level));
         }
 
+        [TestCase("TESTCASE")]
+        [TestCase("testcase")]
+        [TestCase("TeStCaSe")]
+        [Test]
+        public static void ParsingLevel_TestCaseWrittenInDifferentCases_WillParseWithoutError(string level)
+        {
+            Assert.AreEqual((NUnitTestExtractorApp.Level.TestCase), NUnitTestExtractorApp.ParseLevel(level));
+        }
+
         [TestCase(new object[] { 2.34 })]
         [TestCase(new object[] { "text" })]
         [TestCase(new object[] { 2 })]
@@ -216,30 +226,47 @@ namespace NUnitTestExtractorTests
                 string data = string.Empty;
                 data = NUnitTestExtractorApp.AppendArgumentsForTestCasesToString(array, data);
 
-                object expectedValue = null;
+                object actualValue = null;
                 
-                object value = array[0];
+                object expectedValue = array[0];
 
-                switch (value.GetType().ToString())
+                switch (expectedValue.GetType().ToString())
                 {
                     case "System.Int32":
-                        expectedValue = int.Parse(data, CultureInfo.CurrentCulture);
+                        actualValue = int.Parse(data, CultureInfo.CurrentCulture);
                         break;
 
                     case "System.String":
-                        expectedValue = data;
-                        value = "\"" + value + "\"";
+                        actualValue = data;
+                        expectedValue = "\"" + expectedValue + "\"";
                         break;
 
                     case "System.Double":
-                        expectedValue = double.Parse(data, CultureInfo.CurrentCulture);
+                        actualValue = double.Parse(data, CultureInfo.CurrentCulture);
                         break;
                 }
 
-                Assert.AreEqual(value, expectedValue);
+                Assert.AreEqual(expectedValue, actualValue);
             }
         }
+
+        [Test]
+        public static void WritingTestCase_NoArgs_WritesWithEmptyparentheses()
+        {
+            object[] args = new object[] { };
+
+            string declaringType = "Namespace.Class";
+            string name = "TestCase";
+            string data = string.Empty;
+
+            data = NUnitTestExtractorApp.FormattedTestCase(declaringType, name, args, data);
+
+            Assert.AreEqual("Namespace.Class.TestCase()", data);
+        }
     }
+
+   
+
 
     public class ValidDataTestCasesCollection : IEnumerable<string[]>
     {

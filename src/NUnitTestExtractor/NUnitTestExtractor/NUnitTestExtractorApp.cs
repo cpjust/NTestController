@@ -154,13 +154,7 @@ namespace NUnitTestExtractor
                                             break;
 
                                         case Level.TestCase:
-                                            
-                                            if(testCase != null && testCase.Arguments.Length > 0)
-                                            {
-                                                data = methodInfo.DeclaringType + "." + methodInfo.Name + "(";
-                                                data = AppendArgumentsForTestCasesToString(testCase.Arguments, data);
-                                                data += ")";
-                                            }
+                                            data = FormattedTestCase(methodInfo.DeclaringType.ToString(), methodInfo.Name, testCase.Arguments, data);
                                             break;
                                     }
 
@@ -181,6 +175,31 @@ namespace NUnitTestExtractor
                 throw new ArgumentNullException("dlls", "no dlls were specified");
             }
             
+        }
+
+        /// <summary>
+        /// Depending on number of args within the TestCase, function will return properly formatted testcase
+        /// </summary>
+        /// <param name="declaringType">declaring type of testcase method(namespace.class)</param>
+        /// <param name="name">name of testcase</param>
+        /// <param name="testCaseArgs">the object array containing the testcase's arguments</param>
+        /// <param name="data">the string which is appended to</param>
+        /// <returns>the properly formatted TestCase string</returns>
+        public static string FormattedTestCase(string declaringType, string name, object[] testCaseArgs, string data)
+        {
+
+            if (testCaseArgs != null && testCaseArgs.Length > 0)
+            {
+                data = declaringType + "." + name + "(";
+                data = AppendArgumentsForTestCasesToString(testCaseArgs, data);
+                data += ")";
+            }
+            else if (testCaseArgs != null && testCaseArgs.Length == 0)
+            {
+                data = declaringType + "." + name + "()";
+            }
+
+            return data;
         }
 
         /// <summary>
@@ -213,56 +232,30 @@ namespace NUnitTestExtractor
         {
             if(args != null)
             {
-                int count = args.Length;
-
-                for (int i = 0; i < args.Length; i++)
+                List<string> testArgs = new List<string>();
+                 
+                foreach(object arg in args)
                 {
-                    var arg = args[i];
+                    string argString = arg as string;
 
-                    string argString = null;
-
-                    if (arg != null)
-                        argString = arg as string;
-
-                    //if its not last(dont need comma) and if the arg after it is not null(also dont need a comma)
-                    if (i != count - 1)
+                    if(argString != null)
                     {
-                        //if string add quotes to signify that it is a string
-                        if (argString != null)
-                        {
-                            data += "\"" + arg + "\", ";
-                        }
-                        else if (arg == null)
-                        {
-                            data += "null" + ", ";
-                        }
-                        else
-                        {
-                            data += arg + ", ";
-                        }
+                        testArgs.Add("\"" + arg + "\"");
                     }
-
-                    else if (count == 1 || i == count - 1)
+                    else if (arg == null)
                     {
-                        if (argString != null)
-                        {
-                            data += "\"" + arg + "\"";
-                        }
-                        else if (arg == null)
-                        {
-                            data += "null";
-                        }
-                        else
-                        {
-                            data += arg;
-                        }
+                        testArgs.Add("null");
                     }
+                    else
+                    {
+                        testArgs.Add(arg.ToString());
+                    }                    
                 }
-              
+                data += string.Join(", ", testArgs);
+
                 return data;
             }
             throw new ArgumentNullException("args", "no args were specified");
         }
-
     }
 }
