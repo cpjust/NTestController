@@ -33,7 +33,7 @@ namespace NUnitTestExtractor
                         return;
                     }
                    
-                    if(_options.Output != null)
+                    if(!string.IsNullOrEmpty(_options.Output))
                     {
                         string directory = null;
 
@@ -98,8 +98,8 @@ namespace NUnitTestExtractor
         }
 
         /// <summary>
-        /// Uses reflection in order to search user submitted dlls to find either namespaces, classes, or functions which contain tests, then uses WriteTestDllAndName() to
-        /// write data to either stdout or a txt file
+        /// Uses reflection in order to search user submitted dlls to find either namespaces, classes, or functions which contain tests, 
+        /// then uses WriteTestDllAndName() to  write data to either stdout or a txt file
         /// </summary>
         /// <param name="dlls">The dlls which are submitted by user</param>
         /// <param name="level">Specifies the level of granuality to use for the output: either namepspace, class or function</param>
@@ -119,7 +119,6 @@ namespace NUnitTestExtractor
                     try
                     {
                         assembly = Assembly.LoadFrom(dll);
-
                     }
                     catch (FileNotFoundException e)
                     {
@@ -173,28 +172,7 @@ namespace NUnitTestExtractor
                                     }
                                     else if (include)
                                     {
-                                        switch (level)
-                                        {
-                                            case Level.Namespace:
-                                                data = type.Namespace;
-                                                break;
-
-                                            case Level.Class:
-                                                data = methodInfo.DeclaringType.ToString();
-                                                break;
-
-                                            case Level.Function:
-                                                data = methodInfo.DeclaringType + "." + methodInfo.Name;
-                                                break;
-
-                                            case Level.TestCase:
-                                                if (testCase != null)
-                                                {
-                                                    data = FormattedTestCase(methodInfo.DeclaringType.ToString(), methodInfo.Name, testCase.Arguments, data);
-                                                }
-
-                                                break;
-                                        }
+                                        data = FormattedTest(level, type, methodInfo, testCase, data);
 
                                         //Prevent duplicate entries from being written
                                         if (!string.IsNullOrEmpty(data) && !testsWritten.Contains(data))
@@ -205,8 +183,7 @@ namespace NUnitTestExtractor
                                     }
                                 }
                             }
-                            
-                            //reset category name for next method
+                            //reset categoryNames for next method
                             categoryNames = new List<string>();
                         }
                     }
@@ -216,6 +193,43 @@ namespace NUnitTestExtractor
             {
                 throw new ArgumentNullException("dlls", "no dlls were specified");
             }
+        }
+
+        /// <summary>
+        /// Returns the properly formatted test string depending on the level specified. 
+        /// </summary>
+        /// <param name="level">Used in the switch statement to determine how much info to put into the data string</param>
+        /// <param name="type">Used to get the namespace of the test</param>
+        /// <param name="methodInfo">Used to get the test info such as declaring type and name</param>
+        /// <param name="testCase">Used to get arguments of a testcase</param>
+        /// <param name="data">The string which is modified and then returned</param>
+        /// <returns>Returns properly formatted test string</returns>
+        private static string FormattedTest(Level level, Type type, MethodInfo methodInfo, TestCaseAttribute testCase, string data)
+        {
+            switch (level)
+            {
+                case Level.Namespace:
+                    data = type.Namespace;
+                    break;
+
+                case Level.Class:
+                    data = methodInfo.DeclaringType.ToString();
+                    break;
+
+                case Level.Function:
+                    data = methodInfo.DeclaringType + "." + methodInfo.Name;
+                    break;
+
+                case Level.TestCase:
+                    if (testCase != null)
+                    {
+                        data = FormattedTestCase(methodInfo.DeclaringType.ToString(), methodInfo.Name, testCase.Arguments, data);
+                    }
+
+                    break;
+            }
+
+            return data;
         }
 
         /// <summary>
@@ -256,6 +270,7 @@ namespace NUnitTestExtractor
         {
             if (!string.IsNullOrEmpty(includeInfo))
             {
+                //Remove quotes from string in order to properly process it
                 includeInfo = includeInfo.Replace("\"", "");
 
                 List<string> includeInfoValues = new List<string>(includeInfo.Split(','));
