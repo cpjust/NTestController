@@ -293,7 +293,7 @@ namespace NUnitTestExtractor
         /// </summary>
         /// <param name="categoryNames">List of categories to compare info to</param>
         /// <param name="excludeInfo">string of info used to compare to categoryNames</param>
-        /// <returns>returns true if includeInfo is inside of the categoryNames List, false otherwise</returns>
+        /// <returns>returns true if excludeInfo is inside of the categoryNames List, false otherwise</returns>
         public static bool Exclude(IReadOnlyList<string> categoryNames, string excludeInfo)
         {
             if (!string.IsNullOrEmpty(excludeInfo))
@@ -312,7 +312,6 @@ namespace NUnitTestExtractor
                 return false;
             }
             throw new ArgumentNullException("excludeInfo", "no excludeInfo specified");
-
         }
 
         /// <summary>
