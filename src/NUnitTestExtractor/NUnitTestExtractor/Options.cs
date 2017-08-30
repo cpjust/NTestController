@@ -15,6 +15,14 @@ namespace NUnitTestExtractor
             HelpText = "The specifies the output txt file. By default output goes to stdout.")]
         public string Output { get; set; }
 
+        [Option('i', "include", Required = false,
+           HelpText = "This specifies which specific categories of tests that you want to write. Write info in double quotes and separate with a ,")]
+        public string IncludeInfo { get; set; }
+
+        [Option('e', "exclude", Required = false,
+            HelpText = "This specifies which specific categories of tests that you want to exclude from writing. Write info in double quotes and separate with a ,")]
+        public string ExcludeInfo { get; set; }
+
         //Throws NullReferenceException if set is removed
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         [ValueList(typeof(List<string>))]
