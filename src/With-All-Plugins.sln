@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NTestController", "NTestController\NTestController.csproj", "{1E2BD695-E014-4D56-9147-9C00BABD8216}"
 EndProject
@@ -34,6 +34,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NUnit-Executor", "NUnit-Executor\NUnit-Executor.csproj", "{C66476DF-DABB-4087-84B6-951371A69296}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NUnit-Reporter", "NUnit-Reporter\NUnit-Reporter.csproj", "{F42D8164-9021-45B5-B053-43F21A8BB5E6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NUnitTestExtractor", "NUnitTestExtractor\NUnitTestExtractor.csproj", "{D0781EF3-1C14-41F7-B1CF-0CF45E986E6B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NUnitTestExtractorTests", "Tests\NUnitTestExtractorTests\NUnitTestExtractorTests.csproj", "{2EC2A349-A6F8-4F8E-88D3-9F0BD2CBA926}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -85,6 +89,14 @@ Global
 		{F42D8164-9021-45B5-B053-43F21A8BB5E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F42D8164-9021-45B5-B053-43F21A8BB5E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F42D8164-9021-45B5-B053-43F21A8BB5E6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D0781EF3-1C14-41F7-B1CF-0CF45E986E6B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D0781EF3-1C14-41F7-B1CF-0CF45E986E6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D0781EF3-1C14-41F7-B1CF-0CF45E986E6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D0781EF3-1C14-41F7-B1CF-0CF45E986E6B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2EC2A349-A6F8-4F8E-88D3-9F0BD2CBA926}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2EC2A349-A6F8-4F8E-88D3-9F0BD2CBA926}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2EC2A349-A6F8-4F8E-88D3-9F0BD2CBA926}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2EC2A349-A6F8-4F8E-88D3-9F0BD2CBA926}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -94,6 +106,7 @@ Global
 		{B34AC523-6DC3-4D5B-87C2-66BB939ECC54} = {26D0C4B3-0F49-4A1F-87B4-994B9E695801}
 		{5B54999B-54F8-49AF-A766-33765AD3DF4D} = {26D0C4B3-0F49-4A1F-87B4-994B9E695801}
 		{72BC56C5-471E-44D2-BD14-6F81F3F083B5} = {26D0C4B3-0F49-4A1F-87B4-994B9E695801}
+		{2EC2A349-A6F8-4F8E-88D3-9F0BD2CBA926} = {26D0C4B3-0F49-4A1F-87B4-994B9E695801}
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		Policies = $0
