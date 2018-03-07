@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
-using NUnit.Framework;
-using NUnitTestExtractor;
 using System.Diagnostics;
 using System.Collections;
 using System.Text.RegularExpressions;
 using System.Globalization;
+
+using NUnit.Framework;
+
+using NUnitTestExtractor;
 
 namespace NUnitTestExtractorTests
 {
@@ -27,7 +29,8 @@ namespace NUnitTestExtractorTests
             
             StringBuilder builder = new StringBuilder();
 
-            InvokeGetTestsSimulatingFileOutput(builder, dlls, NUnitTestExtractorApp.ParseLevel(level));
+            var ex = Assert.Throws<FileNotFoundException>(() => NUnitTestExtractorApp.GetTests(dlls, NUnitTestExtractorApp.ParseLevel(level)));
+            Assert.That(ex.Message, Is.StringContaining("File was not found:"));
 
             Assert.That(builder.ToString(), Is.Empty, "Nothing should be written.");
         }
@@ -42,10 +45,10 @@ namespace NUnitTestExtractorTests
 
             StringBuilder builder = new StringBuilder();
 
-            InvokeGetTestsSimulatingFileOutput(builder, dlls, NUnitTestExtractorApp.ParseLevel(level));
+            NUnitTestExtractorApp.GetTests(dlls, NUnitTestExtractorApp.ParseLevel(level));
 
             string builderText = builder.ToString();
-            string firstLine = builderText.Substring(0,builderText.IndexOf(Environment.NewLine, StringComparison.OrdinalIgnoreCase));
+            string firstLine = builderText.Substring(0, builderText.IndexOf(Environment.NewLine, StringComparison.OrdinalIgnoreCase));
 
             NUnitTestExtractorApp.Level myLevel = NUnitTestExtractorApp.ParseLevel(level);
 
@@ -61,8 +64,8 @@ namespace NUnitTestExtractorTests
             dlls.Add(dll);
 
             StringBuilder builder = new StringBuilder();
-            
-            InvokeGetTestsSimulatingFileOutput(builder, dlls, NUnitTestExtractorApp.ParseLevel(level));
+
+            NUnitTestExtractorApp.GetTests(dlls, NUnitTestExtractorApp.ParseLevel(level));
 
             string[] lines = builder.ToString().Split('\n');
            
@@ -229,148 +232,7 @@ namespace NUnitTestExtractorTests
 
         #endregion TestCase Tests
 
-        #region IncludeTests
-
-        [Description("Verify that Include returns true when includeInfo matches one of the values in categoryNames.")]
-        [Test] 
-        public static void Include_SingleIncludeValueThatIsInCategoryList_ReturnsTrue()
-        {
-            List<string> categoryNames = new List<string>();
-
-            categoryNames.Add("category1");
-            categoryNames.Add("category2");
-            categoryNames.Add("category3");
-
-            string includeInfo = "category1";
-
-            Assert.IsTrue(NUnitTestExtractorApp.Include(categoryNames, includeInfo), "Include should return true.");
-        }
-
-        [Description("Verify that Include returns false when includeInfo does not match any value in categoryNames.")]
-        [Test]
-        public static void Include_SingleIncludeValueThatIsNotInCategoryList_ReturnsFalse()
-        {
-            List<string> categoryNames = new List<string>();
-
-            categoryNames.Add("category1");
-            categoryNames.Add("category2");
-            categoryNames.Add("category3");
-
-            string includeInfo = "category4";
-
-            Assert.IsFalse(NUnitTestExtractorApp.Include(categoryNames, includeInfo), "Include should return false.");
-        }
-
-        [TestCase("category1,category2,category3")]
-        [TestCase("category1,category2")]
-        [Description("Verify that Include returns true when includeInfo contains multiple values which match values in categoryNames.")]
-        [Test]
-        public static void Include_MultipleIncludeValuesThatAreInCategoryList_ReturnsTrue(string includeInfo)
-        {
-            List<string> categoryNames = new List<string>();
-
-            categoryNames.Add("category1");
-            categoryNames.Add("category2");
-            categoryNames.Add("category3");
-
-            Assert.IsTrue(NUnitTestExtractorApp.Include(categoryNames, includeInfo), "Include should return true.");
-        }
-
-        [TestCase("category1,category2,category4")]
-        [TestCase("category1,category4")]
-        [Description("Verify Include returns false when includeInfo contains multiple values which do not match vales in categoryNames.")]
-        [Test] 
-        public static void Include_MultipleIncludeValuesThatAreNotInCategoryList_ReturnsFalse(string includeInfo)
-        {
-            List<string> categoryNames = new List<string>();
-
-            categoryNames.Add("category1");
-            categoryNames.Add("category2");
-            categoryNames.Add("category3");
-
-            Assert.IsFalse(NUnitTestExtractorApp.Include(categoryNames, includeInfo), "Include should return false.");
-        }
-
-        #endregion IncludeTests
-
-        #region ExcludeTests
-
-        [Description("Verify Exclude returns true when excludeInfo contains a value which matches a value in categoryNames.")]
-        [Test]
-        public static void Exclude_SingleExcludeValueThatIsInCategoryList_ReturnsTrue()
-        {
-            List<string> categoryNames = new List<string>();
-
-            categoryNames.Add("category1");
-            categoryNames.Add("category2");
-            categoryNames.Add("category3");
-
-            string excludeInfo = "category1";
-
-            Assert.IsTrue(NUnitTestExtractorApp.Exclude(categoryNames, excludeInfo), "Exclude should return true.");
-        }
-
-        [Description("Verify Exclude returns false when excludeInfo contains a value which does not match any value in categoryNames.")]
-        [Test]
-        public static void Exclude_SingleExcludeValueThatIsNotInCategoryList_ReturnsFalse()
-        {
-            List<string> categoryNames = new List<string>();
-
-            categoryNames.Add("category1");
-            categoryNames.Add("category2");
-            categoryNames.Add("category3");
-
-            string excludeInfo = "category4";
-
-            Assert.IsFalse(NUnitTestExtractorApp.Exclude(categoryNames, excludeInfo), "Exclude should return false.");
-        }
-
-        [TestCase("category1,category2,category3")]
-        [TestCase("category1,category2")]
-        [Description("Verify Exclude returns true when excludeInfo contains values which match values in categoryNames.")]
-        [Test]
-        public static void Exclude_MultipleExcludeValuesThatAreInCategoryList_ReturnsTrue(string excludeInfo)
-        {
-            List<string> categoryNames = new List<string>();
-
-            categoryNames.Add("category1");
-            categoryNames.Add("category2");
-            categoryNames.Add("category3");
-
-            Assert.IsTrue(NUnitTestExtractorApp.Exclude(categoryNames, excludeInfo), "Exclude should return true.");
-        }
-
-        [TestCase("category4")]
-        [TestCase("category5,category4")]
-        [Description("Verify Exclude returns false when excludeInfo contains values which do not match any values in categoryNames.")]
-        [Test]
-        public static void Exclude_MultipleExcludeValuesThatAreNotInCategoryList_ReturnsFalse(string excludeInfo)
-        {
-            List<string> categoryNames = new List<string>();
-
-            categoryNames.Add("category1");
-            categoryNames.Add("category2");
-            categoryNames.Add("category3");
-
-            Assert.IsFalse(NUnitTestExtractorApp.Exclude(categoryNames, excludeInfo), "Exclude should return false.");
-        }
-        #endregion ExcludeTests
-
         #region Private Functions
-
-        /// <summary>
-        /// Used to invoke the GetTests() method in NUnitTestExtractorApp
-        /// </summary>
-        /// <param name="builder">The string builder which simulates a text file for testing purposes</param>
-        /// <param name="dlls">The dlls to pass to GetTests()</param> 
-        /// <param name="level">The level to pass to GetTests()</param>
-        private static void InvokeGetTestsSimulatingFileOutput(StringBuilder builder, List<string> dlls, NUnitTestExtractorApp.Level level)
-        {
-            using (StringWriter writer = new StringWriter(builder, CultureInfo.CurrentCulture))
-            {
-                NUnitTestExtractorApp.GetTests(dlls, level, writer);
-            }
-        }
 
         /// <summary>
         /// Determines which regex string return depending on the Level 
