@@ -190,8 +190,13 @@ namespace NUnitTestExtractor
                 var attributes = test.GetCustomAttributesData();
 
                 // search function attributes to find out whether the function has "Test" or "TestCase" attribute defined
-                if (!attributes.Any(x => x.AttributeType.Equals(typeof(TestAttribute)))
-                    && !attributes.Any(x => x.AttributeType.Equals(typeof(TestCaseAttribute))))
+                // if no matches, skip this function
+                // search function attributes to find out whether the function has "Explicit" or "Ingored" attribute defined
+                // if found any attribute related to "Explicit" or "Ingored", skip this function
+                if (!attributes.Any(x => x.AttributeType.Equals(typeof(TestAttribute))
+                                    && x.AttributeType.Equals(typeof(TestCaseAttribute)))
+                                    || attributes.Any(x => x.AttributeType.Equals(typeof(ExplicitAttribute)))
+                                    || attributes.Any(x => x.AttributeType.Equals(typeof(IgnoreAttribute))))
                 {
                     continue;
                 }
