@@ -26,7 +26,7 @@ namespace NUnitTestExtractorTests
         {
             NUnitTestExtractorApp.ScopeLevel = level;
 
-            var ex = Assert.Throws<FileNotFoundException>(() => NUnitTestExtractorApp.GetInfoFromAssembly(dll));
+            var ex = Assert.Throws<FileNotFoundException>(() => NUnitTestExtractorApp.GenerateInfoFromAssembly(dll));
 
             Assert.That(ex.Message, Is.StringContaining("File was not found:"));
         }
@@ -38,7 +38,7 @@ namespace NUnitTestExtractorTests
         {
             NUnitTestExtractorApp.ScopeLevel = level;
 
-            NUnitTestExtractorApp.GetInfoFromAssembly(dll);
+            NUnitTestExtractorApp.GenerateInfoFromAssembly(dll);
         }
 
         #endregion WritingToFile Tests

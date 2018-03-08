@@ -1,9 +1,11 @@
 ﻿using System;
-using System.Globalization;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using System.Reflection;
+using System.Diagnostics.CodeAnalysis;
+
+using Utilities;
 
 using NUnit.Framework;
 
@@ -12,6 +14,8 @@ namespace NUnitTestExtractor
     public static class NUnitTestExtractorApp
     {
         private static Options _options = new Options();
+
+        private static Assembly _assembly = null;
 
         public enum Level { Namespace, Class, Function, TestCase };
 
@@ -31,24 +35,12 @@ namespace NUnitTestExtractor
                     // _options.Output is an abusolute path of output file for the test name list
                     if (!string.IsNullOrEmpty(_options.Output))
                     {
-                        FileInfo fi = new FileInfo(_options.Output);
-
-                        // if the parent directory doesn't exist, then create it
-                        if (!fi.Directory.Exists)
-                        {
-                            fi.Directory.Create();
-                        }
-
-                        // if the output file doesn't exist, then create it
-                        if (!fi.Exists)
-                        {
-                            fi.Create();
-                        }
+                        CreateOutputFile();
                     }
 
                     foreach (var assembly in _options.DLLs)
                     {
-                        GetInfoFromAssembly(assembly);
+                        GenerateInfoFromAssembly(assembly);
                     }
                 }
             }
@@ -73,28 +65,35 @@ namespace NUnitTestExtractor
         /// <returns>The Level from parsing the string</returns>
         public static Level ParseLevel(string levelToParse)
         {
-            try
-            {
-                return (Level)Enum.Parse(typeof(Level), levelToParse, ignoreCase: true);
-            }
-            catch
-            {
-                string errorMessage = string.Format(CultureInfo.CurrentCulture, "Incorrect argument - Level: {0}", levelToParse);
+            ThrowIf.ArgumentNull(levelToParse, nameof(levelToParse));
 
-                throw new ArgumentException(errorMessage);
+            return (Level)Enum.Parse(typeof(Level), levelToParse, ignoreCase: true);
+        }
+
+        /// <summary>
+        /// Create the output file's parent directory if it is necessary
+        /// </summary>
+        private static void CreateOutputFile()
+        {
+            FileInfo fi = new FileInfo(_options.Output);
+
+            // if the parent directory doesn't exist, then create it
+            if (!fi.Directory.Exists)
+            {
+                fi.Directory.Create();
             }
         }
 
         /// <summary>
-        /// 
+        /// Get a list of namespaces/classes/functions/testcases from the assembly
         /// </summary>
         /// <param name="assemblyFullPath"></param>
         /// <returns></returns>
-        public static HashSet<string> GetInfoFromAssembly(string assemblyFullPath)
+        public static void GenerateInfoFromAssembly(string assemblyFullPath)
         {
             HashSet<string> rv = new HashSet<string>();
 
-            foreach (var item in getValidTestSuiteTypesFromAssembly(assemblyFullPath))
+            foreach (var item in GetValidTestSuiteTypesFromAssembly(assemblyFullPath))
             {
                 Level lv = ParseLevel(_options.Level);
 
@@ -107,53 +106,46 @@ namespace NUnitTestExtractor
                         rv.Add(item.FullName);
                         break;
                     case Level.Function:
-                        rv.IntersectWith(getValidTestsFromTestSuite(item));
+                        rv.UnionWith(GetValidTestsFromTestSuite(item));
                         break;
                     case Level.TestCase:
                         break;
                     default:
-                        throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, "Invalid level option: {0}", lv.ToString()));
+                        throw new ArgumentException(StringUtils.FormatInvariant("Invalid level option: {0}", lv.ToString()));
                 }
             }
 
-            return rv;
+            OutputInfo(rv);
         }
 
         /// <summary>
-        /// 
+        /// Load assembly by passing its path
         /// </summary>
         /// <param name="assemblyFullPath"></param>
         /// <returns></returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2001:AvoidCallingProblematicMethods", MessageId = "System.Reflection.Assembly.LoadFrom")]
-        private static Assembly loadAssembly(string assemblyFullPath)
+        [SuppressMessage("Microsoft.Reliability", "CA2001:AvoidCallingProblematicMethods", MessageId = "System.Reflection.Assembly.LoadFrom")]
+        private static void LoadAssembly(string assemblyFullPath)
         {
-            if (string.IsNullOrWhiteSpace(assemblyFullPath))
-            {
-                throw new ArgumentNullException("assemblyFullPath", "can't be NULL or Empty.");
-            }
-
-            Assembly assembly = null;
+            ThrowIf.StringIsNullOrWhiteSpace(assemblyFullPath, nameof(assemblyFullPath));
 
             try
             {
-                assembly = Assembly.LoadFrom(assemblyFullPath);
+                _assembly = Assembly.LoadFrom(assemblyFullPath);
             }
             catch (FileNotFoundException)
             {
-                string errorMessage = string.Format(CultureInfo.CurrentCulture, "File was not found: '{0}'", assemblyFullPath);
+                string errorMessage = StringUtils.FormatInvariant("File was not found: '{0}'", assemblyFullPath);
 
                 throw new FileNotFoundException(errorMessage);
             }
-
-            return assembly;
         }
 
         /// <summary>
-        /// 
+        /// Validate whether the type object is a valid test suite
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        private static bool isValidTestSuite(Type type)
+        private static bool IsValidTestSuite(Type type)
         {
             return type.IsClass
                 && type.IsPublic
@@ -167,13 +159,15 @@ namespace NUnitTestExtractor
         /// </summary>
         /// <param name="assemblyFullPath">The full qualified path for the assembly</param>
         /// <returns>Return a list of test suites</returns>
-        private static HashSet<Type> getValidTestSuiteTypesFromAssembly(string assemblyFullPath)
+        private static HashSet<Type> GetValidTestSuiteTypesFromAssembly(string assemblyFullPath)
         {
             HashSet<Type> testSuites = new HashSet<Type>();
 
-            foreach (var item in loadAssembly(assemblyFullPath).GetTypes())
+            LoadAssembly(assemblyFullPath);
+
+            foreach (var item in _assembly.GetTypes())
             {
-                if (isValidTestSuite(item))
+                if (IsValidTestSuite(item))
                 {
                     testSuites.Add(item);
                 }
@@ -187,7 +181,7 @@ namespace NUnitTestExtractor
         /// </summary>
         /// <param name="testSuite"></param>
         /// <returns>Return a list of tests</returns>
-        private static HashSet<string> getValidTestsFromTestSuite(Type testSuite)
+        private static HashSet<string> GetValidTestsFromTestSuite(Type testSuite)
         {
             HashSet<string> tests = new HashSet<string>();
 
@@ -205,21 +199,19 @@ namespace NUnitTestExtractor
                 // search the category attributes for the function
                 var categories = attributes.Where(x => x.AttributeType.Equals(typeof(CategoryAttribute)));
 
-                // match the "Exclude" category from the function category list
+                // match the "Exclude" category from the function category attibute list
                 // if the function has matched exclude category, we will skip this function
                 if (categories.Any(x => x.ConstructorArguments.Any(y => y.Value.Equals(_options.ExcludeInfo))))
                 {
                     continue;
                 }
 
-                // match the "Include" category from the function category list
+                // match the "Include" category from the function category attribute list
                 // if the function has matched include category, we will count this function as a valid test
                 if (string.IsNullOrWhiteSpace(_options.IncludeInfo)
                     || categories.Any(x => x.ConstructorArguments.Any(y => y.Value.Equals(_options.IncludeInfo))))
                 {
-                    Console.WriteLine("Found the test and add it.");
-
-                    tests.Add(test.DeclaringType.GetTypeInfo().Name + "." + test.Name);
+                    tests.Add(test.DeclaringType.GetTypeInfo().FullName + "." + test.Name);
                 }
             }
 
@@ -227,28 +219,28 @@ namespace NUnitTestExtractor
         }
 
         /// <summary>
-        /// 
+        /// Create the output file if it doesn't exist, or append it if it exists
         /// </summary>
         /// <param name="outputInfo"></param>
-        /// <param name="test"></param>
-        private static void modifyOutput(string outputInfo, MethodInfo test)
+        /// <param name="type"></param>
+        private static void OutputInfo(HashSet<string> outputInfoList)
         {
-            if (test == null)
-            {
-                throw new ArgumentNullException("test", "can't be NULL or Empty.");
-            }
+            ThrowIf.ArgumentNull(outputInfoList, nameof(outputInfoList));
 
-            if (string.IsNullOrWhiteSpace(_options.Output))
+            foreach (var outputInfo in outputInfoList)
             {
-                Console.WriteLine(outputInfo);
-            }
-            else
-            {
-                using (StreamWriter writer = new StreamWriter(_options.Output, append: true))
+                string finalOutput = StringUtils.FormatInvariant("\"" + _assembly.Location + "\"" + " | " + outputInfo);
+
+                if (string.IsNullOrWhiteSpace(_options.Output))
                 {
-                    string moduleFullQualifiedName = test.DeclaringType.Module.FullyQualifiedName;
-
-                    writer.WriteLine("\"" + moduleFullQualifiedName + "\"" + " | " + outputInfo);
+                    Console.WriteLine(finalOutput);
+                }
+                else
+                {
+                    using (StreamWriter writer = new StreamWriter(_options.Output, append: true))
+                    {
+                        writer.WriteLine(finalOutput);
+                    }
                 }
             }
         }
@@ -258,15 +250,15 @@ namespace NUnitTestExtractor
         /// </summary>
         /// <param name="test"></param>
         /// <returns></returns>
-        private static string generateTestCaseName(MethodInfo test)
-        {
-            string testCaseName = string.Empty;
+        //private static string generateTestCaseName(MethodInfo test)
+        //{
+        //    string testCaseName = string.Empty;
 
-            Console.WriteLine(test.Name);
+        //    Console.WriteLine(test.Name);
 
-            // under construction :)
+        //    // under construction :)
 
-            return testCaseName;
-        }
+        //    return testCaseName;
+        //}
     }
 }
