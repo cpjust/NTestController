@@ -24,15 +24,11 @@ namespace NUnitTestExtractorTests
         [Test]
         public static void WritingToFile_InvalidDll_NothingWritten(string dll, string level)
         {
-            List<string> dlls = new List<string>();
-            dlls.Add(dll);
-            
-            StringBuilder builder = new StringBuilder();
+            NUnitTestExtractorApp.ScopeLevel = level;
 
-            var ex = Assert.Throws<FileNotFoundException>(() => NUnitTestExtractorApp.GetTests(dlls, NUnitTestExtractorApp.ParseLevel(level)));
+            var ex = Assert.Throws<FileNotFoundException>(() => NUnitTestExtractorApp.GetInfoFromAssembly(dll));
+
             Assert.That(ex.Message, Is.StringContaining("File was not found:"));
-
-            Assert.That(builder.ToString(), Is.Empty, "Nothing should be written.");
         }
 
         [TestCaseSource(typeof(ValidDataTestCasesCollection))]
@@ -40,36 +36,9 @@ namespace NUnitTestExtractorTests
         [Test]
         public static void WritingToFile_ValidDllAndEveryLevel_GetsWrittenWithProperFormat(string dll, string level)
         {
-            List<string> dlls = new List<string>();
-            dlls.Add(dll);
+            NUnitTestExtractorApp.ScopeLevel = level;
 
-            StringBuilder builder = new StringBuilder();
-
-            NUnitTestExtractorApp.GetTests(dlls, NUnitTestExtractorApp.ParseLevel(level));
-
-            string builderText = builder.ToString();
-            string firstLine = builderText.Substring(0, builderText.IndexOf(Environment.NewLine, StringComparison.OrdinalIgnoreCase));
-
-            NUnitTestExtractorApp.Level myLevel = NUnitTestExtractorApp.ParseLevel(level);
-
-            Assert.That(VerifyOutputFormat(myLevel).IsMatch(firstLine), "Regex format should match output.");
-        }
-        
-        [TestCaseSource(typeof(ValidDataTestCasesCollection))]
-        [Description("Write data to a file using a valid dll and level. Verify the file contains no duplicates.")]
-        [Test]
-        public static void WritingToFile_ValidDllAndEveryLevel_FileContainsNoDuplicates(string dll, string level)
-        {
-            List<string> dlls = new List<string>();
-            dlls.Add(dll);
-
-            StringBuilder builder = new StringBuilder();
-
-            NUnitTestExtractorApp.GetTests(dlls, NUnitTestExtractorApp.ParseLevel(level));
-
-            string[] lines = builder.ToString().Split('\n');
-           
-            Assert.AreEqual(lines.Length, lines.Distinct().Count());
+            NUnitTestExtractorApp.GetInfoFromAssembly(dll);
         }
 
         #endregion WritingToFile Tests
@@ -176,61 +145,6 @@ namespace NUnitTestExtractorTests
         }
 
         #endregion ParsingLevel Tests
-
-        #region TestCase Tests
-
-        [TestCase(new object[] { 2.34 })]
-        [TestCase(new object[] { "text" })]
-        [TestCase(new object[] { 2 })]
-        [Description("Append the arguments to a string. Verify the arguments get parsed to their type successfuly.")]
-        [Test]
-        public static void WritingTestCaseArgs_ArgIsSingleValidDataType_WritesWithoutError(object[] array)
-        {
-            if(array != null)
-            {
-                string data = string.Empty;
-                data = NUnitTestExtractorApp.AppendArgumentsForTestCasesToString(array, data);
-
-                object actualValue = null;
-                
-                object expectedValue = array[0];
-
-                switch (expectedValue.GetType().ToString())
-                {
-                    case "System.Int32":
-                        actualValue = int.Parse(data, CultureInfo.CurrentCulture);
-                        break;
-
-                    case "System.String":
-                        actualValue = data;
-                        expectedValue = "\"" + expectedValue + "\"";
-                        break;
-
-                    case "System.Double":
-                        actualValue = double.Parse(data, CultureInfo.CurrentCulture);
-                        break;
-                }
-
-                Assert.AreEqual(expectedValue, actualValue, "Argument should parse from string to original type successfuly.");
-            }
-        }
-        
-        [Description("Verify a TestCase with no arguments gets formatted correctly.")]
-        [Test]
-        public static void WritingTestCase_NoArgs_WritesWithEmptyparentheses()
-        {
-            object[] args = new object[] { };
-
-            string declaringType = "Namespace.Class";
-            string name = "TestCase";
-            string data = string.Empty;
-
-            data = NUnitTestExtractorApp.FormattedTestCase(declaringType, name, args, data);
-
-            Assert.AreEqual("Namespace.Class.TestCase()", data, "TestCase should be formatted correctly.");
-        }
-
-        #endregion TestCase Tests
 
         #region Private Functions
 
