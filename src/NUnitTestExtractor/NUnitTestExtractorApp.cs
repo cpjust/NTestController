@@ -25,22 +25,31 @@ namespace NUnitTestExtractor
             {
                 if (parser.ParseArgumentsStrict(args, _options, () => Environment.Exit(-1)))
                 {
-                    if (_options.Help)
+                    try
                     {
-                        Console.WriteLine(CommandLine.Text.HelpText.AutoBuild(_options));
+                        if (_options.Help)
+                        {
+                            Console.WriteLine(CommandLine.Text.HelpText.AutoBuild(_options));
 
-                        return;
+                            Environment.Exit(0);
+                        }
+
+                        // _options.Output is an abusolute path of output file for the test name list
+                        if (!string.IsNullOrEmpty(_options.Output))
+                        {
+                            CreateOutputFile();
+                        }
+
+                        foreach (var assembly in _options.DLLs)
+                        {
+                            GenerateInfoFromAssembly(assembly);
+                        }
                     }
-
-                    // _options.Output is an abusolute path of output file for the test name list
-                    if (!string.IsNullOrEmpty(_options.Output))
+                    catch (Exception e)
                     {
-                        CreateOutputFile();
-                    }
+                        Console.WriteLine(StringUtils.FormatInvariant("Failed to process: {0}", e.InnerException));
 
-                    foreach (var assembly in _options.DLLs)
-                    {
-                        GenerateInfoFromAssembly(assembly);
+                        Environment.Exit(-2);
                     }
                 }
             }
