@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CommandLine;
 using System.IO;
 using System.Reflection;
-using NUnit;
-using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using NUnit.Framework;
 
 namespace NUnitTestExtractor
@@ -18,6 +14,7 @@ namespace NUnitTestExtractor
 
         public enum Level { Namespace, Class, Function, TestCase, Null }
 
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
         static void Main(string[] args)
         {
             //Setting a default value
@@ -98,13 +95,42 @@ namespace NUnitTestExtractor
         }
 
         /// <summary>
+        /// Returns true only if the specified method is a valid NUnit test that is not marked as Explicit or Ignore.
+        /// </summary>
+        /// <param name="method">The method to check.</param>
+        /// <returns>True only if the specified method is a valid NUnit test that is not marked as Explicit or Ignore, otherwise false.</returns>
+        private static bool IsValidTestMethod(MethodInfo method)
+        {
+            var attributes = method.GetCustomAttributesData();
+
+            // If the function attributes doesn't have either "Test", "TestCase" or "TestCaseSource" attribute, it is not a valid NUnit test, skip it.
+            if (!attributes.Any(x => x.AttributeType.Equals(typeof(TestAttribute)) ||
+                                     x.AttributeType.Equals(typeof(TestCaseAttribute)) ||
+                                     x.AttributeType.Equals(typeof(TestCaseSourceAttribute))
+                               ))
+            {
+                return false;
+            }
+
+            // If the function attributes has either "Explicit" or "Ignore" attribute, it is not a valid NUnit test, skip it.
+            if (attributes.Any(x => x.AttributeType.Equals(typeof (ExplicitAttribute))) ||
+                attributes.Any(x => x.AttributeType.Equals(typeof (IgnoreAttribute))))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Uses reflection in order to search user submitted dlls to find either namespaces, classes, or functions which contain tests, 
         /// then uses WriteTestDllAndName() to  write data to either stdout or a txt file
         /// </summary>
         /// <param name="dlls">The dlls which are submitted by user</param>
         /// <param name="level">Specifies the level of granuality to use for the output: either namepspace, class or function</param>
         /// <param name="writer">The StreamWriter which will be passed to WriteTestDllAndName() </param>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2001:AvoidCallingProblematicMethods", MessageId = "System.Reflection.Assembly.LoadFrom")]
+        [SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
+        [SuppressMessage("Microsoft.Reliability", "CA2001:AvoidCallingProblematicMethods", MessageId = "System.Reflection.Assembly.LoadFrom")]
         public static void GetTests(IList<string> dlls, Level level, TextWriter writer)
         {
             List<string> testsWritten = new List<string>();
@@ -138,6 +164,11 @@ namespace NUnitTestExtractor
 
                         foreach (MethodInfo methodInfo in type.GetMethods())
                         {
+                            if (!IsValidTestMethod(methodInfo))
+                            {
+                                continue;
+                            }
+
                             var attributes = methodInfo.GetCustomAttributes(true);
 
                             var categories = methodInfo.GetCustomAttributes(typeof(CategoryAttribute));
