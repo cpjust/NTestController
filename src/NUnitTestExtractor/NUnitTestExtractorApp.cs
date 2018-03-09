@@ -34,10 +34,10 @@ namespace NUnitTestExtractor
                             Environment.Exit(0);
                         }
 
-                        // _options.Output is an abusolute path of output file for the test name list
+                        // _options.Output is an absolute path of output file for the test name list
                         if (!string.IsNullOrEmpty(_options.Output))
                         {
-                            CreateOutputFile();
+                            CreateOutputFileParentDirectory();
                         }
 
                         foreach (var assembly in _options.DLLs)
@@ -47,7 +47,7 @@ namespace NUnitTestExtractor
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine(StringUtils.FormatInvariant("Failed to process: {0}", e.InnerException));
+                        Console.Error.WriteLine(StringUtils.FormatInvariant("Failed to process: {0}", e.InnerException));
 
                         Environment.Exit(-2);
                     }
@@ -82,7 +82,7 @@ namespace NUnitTestExtractor
         /// <summary>
         /// Create the output file's parent directory if it is necessary
         /// </summary>
-        private static void CreateOutputFile()
+        private static void CreateOutputFileParentDirectory()
         {
             FileInfo fi = new FileInfo(_options.Output);
 
@@ -97,10 +97,9 @@ namespace NUnitTestExtractor
         /// Get a list of namespaces/classes/functions/testcases from the assembly
         /// </summary>
         /// <param name="assemblyFullPath"></param>
-        /// <returns></returns>
         public static void GenerateInfoFromAssembly(string assemblyFullPath)
         {
-            HashSet<string> rv = new HashSet<string>();
+            HashSet<string> testInfo = new HashSet<string>();
 
             foreach (var item in GetValidTestSuiteTypesFromAssembly(assemblyFullPath))
             {
@@ -109,13 +108,13 @@ namespace NUnitTestExtractor
                 switch (lv)
                 {
                     case Level.Namespace:
-                        rv.Add(item.Namespace);
+                        testInfo.Add(item.Namespace);
                         break;
                     case Level.Class:
-                        rv.Add(item.FullName);
+                        testInfo.Add(item.FullName);
                         break;
                     case Level.Function:
-                        rv.UnionWith(GetValidTestsFromTestSuite(item));
+                        testInfo.UnionWith(GetValidTestsFromTestSuite(item));
                         break;
                     case Level.TestCase:
                         break;
@@ -124,14 +123,13 @@ namespace NUnitTestExtractor
                 }
             }
 
-            OutputInfo(rv);
+            OutputInfo(testInfo);
         }
 
         /// <summary>
         /// Load assembly by passing its path
         /// </summary>
         /// <param name="assemblyFullPath"></param>
-        /// <returns></returns>
         [SuppressMessage("Microsoft.Reliability", "CA2001:AvoidCallingProblematicMethods", MessageId = "System.Reflection.Assembly.LoadFrom")]
         private static void LoadAssembly(string assemblyFullPath)
         {
@@ -152,8 +150,8 @@ namespace NUnitTestExtractor
         /// <summary>
         /// Validate whether the type object is a valid test suite
         /// </summary>
-        /// <param name="type"></param>
-        /// <returns></returns>
+        /// <param name="type">This is the Type we want to validate.</param>
+        /// <returns>Return a bool value if the type is a NUnit test suite.</returns>
         private static bool IsValidTestSuite(Type type)
         {
             return type.IsClass
@@ -188,7 +186,7 @@ namespace NUnitTestExtractor
         /// <summary>
         /// Get all valid tests from the suite
         /// </summary>
-        /// <param name="testSuite"></param>
+        /// <param name="testSuite">A valid NUnit test suite</param>
         /// <returns>Return a list of tests</returns>
         private static HashSet<string> GetValidTestsFromTestSuite(Type testSuite)
         {
@@ -200,8 +198,8 @@ namespace NUnitTestExtractor
 
                 // search function attributes to find out whether the function has "Test" or "TestCase" attribute defined
                 // if no matches, skip this function
-                // search function attributes to find out whether the function has "Explicit" or "Ingored" attribute defined
-                // if found any attribute related to "Explicit" or "Ingored", skip this function
+                // search function attributes to find out whether the function has "Explicit" or "Ignored" attribute defined
+                // if found any attribute related to "Explicit" or "Ignored", skip this function
                 if (!attributes.Any(x => x.AttributeType.Equals(typeof(TestAttribute))
                                     && x.AttributeType.Equals(typeof(TestCaseAttribute)))
                                     || attributes.Any(x => x.AttributeType.Equals(typeof(ExplicitAttribute)))
@@ -235,8 +233,7 @@ namespace NUnitTestExtractor
         /// <summary>
         /// Create the output file if it doesn't exist, or append it if it exists
         /// </summary>
-        /// <param name="outputInfo"></param>
-        /// <param name="type"></param>
+        /// <param name="outputInfo">The raw information need to be re-construct to our expected format.</param>
         private static void OutputInfo(HashSet<string> outputInfoList)
         {
             ThrowIf.ArgumentNull(outputInfoList, nameof(outputInfoList));
