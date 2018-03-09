@@ -128,6 +128,14 @@ namespace NUnitTestExtractor
 
                     foreach (Type type in assembly.GetTypes())
                     {
+                        // Skip Explicit or Ignored tests.
+                        if (!type.IsPublic ||
+                            type.CustomAttributes.Any(a => a.AttributeType.Equals(typeof(ExplicitAttribute))) ||
+                            type.CustomAttributes.Any(a => a.AttributeType.Equals(typeof(IgnoreAttribute))))
+                        {
+                            continue;
+                        }
+
                         foreach (MethodInfo methodInfo in type.GetMethods())
                         {
                             var attributes = methodInfo.GetCustomAttributes(true);
