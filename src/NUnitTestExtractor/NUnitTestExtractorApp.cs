@@ -95,6 +95,20 @@ namespace NUnitTestExtractor
         }
 
         /// <summary>
+        /// Validate whether the type object is a valid NUnit test suite.
+        /// </summary>
+        /// <param name="type">This is the Type we want to validate.</param>
+        /// <returns>Return a bool value if the type is a NUnit test suite.</returns>
+        private static bool IsValidTestSuite(Type type)
+        {
+            return type.IsClass
+                && type.IsPublic
+                && type.CustomAttributes.Any(x => x.AttributeType.Equals(typeof(TestFixtureAttribute)))
+                && !type.CustomAttributes.Any(x => x.AttributeType.Equals(typeof(ExplicitAttribute)))
+                && !type.CustomAttributes.Any(x => x.AttributeType.Equals(typeof(IgnoreAttribute)));
+        }
+
+        /// <summary>
         /// Returns true only if the specified method is a valid NUnit test that is not marked as Explicit or Ignore.
         /// </summary>
         /// <param name="method">The method to check.</param>
@@ -154,16 +168,15 @@ namespace NUnitTestExtractor
 
                     foreach (Type type in assembly.GetTypes())
                     {
-                        // Skip Explicit or Ignored tests.
-                        if (!type.IsPublic ||
-                            type.CustomAttributes.Any(a => a.AttributeType.Equals(typeof(ExplicitAttribute))) ||
-                            type.CustomAttributes.Any(a => a.AttributeType.Equals(typeof(IgnoreAttribute))))
+                        // Skip Explicit or Ignored classes.
+                        if (!IsValidTestSuite(type))
                         {
                             continue;
                         }
 
                         foreach (MethodInfo methodInfo in type.GetMethods())
                         {
+                            // Skip Explicit or Ignored test methods.
                             if (!IsValidTestMethod(methodInfo))
                             {
                                 continue;
