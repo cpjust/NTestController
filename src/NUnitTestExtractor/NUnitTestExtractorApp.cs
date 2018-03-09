@@ -196,14 +196,14 @@ namespace NUnitTestExtractor
             {
                 var attributes = test.GetCustomAttributesData();
 
-                // search function attributes to find out whether the function has "Test" or "TestCase" attribute defined
-                // if no matches, skip this function
-                // search function attributes to find out whether the function has "Explicit" or "Ignored" attribute defined
-                // if found any attribute related to "Explicit" or "Ignored", skip this function
-                if (!attributes.Any(x => x.AttributeType.Equals(typeof(TestAttribute))
-                                    && x.AttributeType.Equals(typeof(TestCaseAttribute)))
-                                    || attributes.Any(x => x.AttributeType.Equals(typeof(ExplicitAttribute)))
-                                    || attributes.Any(x => x.AttributeType.Equals(typeof(IgnoreAttribute))))
+                // if the function attributes don't have either"Test" or "TestCase" attribute, it is not a valid NUnit test, skip it.
+                if (!attributes.Any(x => x.AttributeType.Equals(typeof(TestAttribute)) || x.AttributeType.Equals(typeof(TestCaseAttribute))))
+                {
+                    continue;
+                }
+
+                // if the function attributes have either "Explicit" or "Ignore" attribute, it is not a valid NUnit test, skip it.
+                if (attributes.Any(x => x.AttributeType.Equals(typeof(ExplicitAttribute))) || attributes.Any(x => x.AttributeType.Equals(typeof(IgnoreAttribute))))
                 {
                     continue;
                 }
