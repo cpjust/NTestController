@@ -19,7 +19,7 @@ namespace NUnitTestExtractor
 
         public enum Level { Namespace, Class, Function, TestCase };
 
-        public static void Main(string[] args)
+        public static int Main(string[] args)
         {
             using (var parser = new CommandLine.Parser(with => with.HelpWriter = Console.Error))
             {
@@ -30,8 +30,6 @@ namespace NUnitTestExtractor
                         if (_options.Help)
                         {
                             Console.WriteLine(CommandLine.Text.HelpText.AutoBuild(_options));
-
-                            Environment.Exit(0);
                         }
 
                         // _options.Output is an absolute path of output file for the test name list
@@ -49,10 +47,12 @@ namespace NUnitTestExtractor
                     {
                         Console.Error.WriteLine(StringUtils.FormatInvariant("Failed to process: {0}", e.InnerException));
 
-                        Environment.Exit(-2);
+                        return -2;
                     }
                 }
             }
+
+            return 0;
         }
 
         public static string ScopeLevel
@@ -94,7 +94,7 @@ namespace NUnitTestExtractor
         }
 
         /// <summary>
-        /// Get a list of namespaces/classes/functions/testcases from the assembly
+        /// Get a list of Name spaces/classes/functions/test cases from the assembly
         /// </summary>
         /// <param name="assemblyFullPath"></param>
         public static void GenerateInfoFromAssembly(string assemblyFullPath)
@@ -117,7 +117,7 @@ namespace NUnitTestExtractor
                         testInfo.UnionWith(GetValidTestsFromTestSuite(item));
                         break;
                     case Level.TestCase:
-                        break;
+                        throw new NotImplementedException("Test case level analyzing hasn't been implemented yet.");
                     default:
                         throw new ArgumentException(StringUtils.FormatInvariant("Invalid level option: {0}", lv.ToString()));
                 }
@@ -151,7 +151,7 @@ namespace NUnitTestExtractor
         /// Validate whether the type object is a valid test suite
         /// </summary>
         /// <param name="type">This is the Type we want to validate.</param>
-        /// <returns>Return a bool value if the type is a NUnit test suite.</returns>
+        /// <returns>Return a boolean value if the type is a NUnit test suite.</returns>
         private static bool IsValidTestSuite(Type type)
         {
             return type.IsClass
@@ -211,7 +211,7 @@ namespace NUnitTestExtractor
                 // search the category attributes for the function
                 var categories = attributes.Where(x => x.AttributeType.Equals(typeof(CategoryAttribute)));
 
-                // match the "Exclude" category from the function category attibute list
+                // match the "Exclude" category from the function category attribute list
                 // if the function has matched exclude category, we will skip this function
                 if (categories.Any(x => x.ConstructorArguments.Any(y => y.Value.Equals(_options.ExcludeInfo))))
                 {
@@ -233,14 +233,14 @@ namespace NUnitTestExtractor
         /// <summary>
         /// Create the output file if it doesn't exist, or append it if it exists
         /// </summary>
-        /// <param name="outputInfo">The raw information need to be re-construct to our expected format.</param>
+        /// <param name="outputInfoList">The raw information need to be re-construct to our expected format.</param>
         private static void OutputInfo(HashSet<string> outputInfoList)
         {
             ThrowIf.ArgumentNull(outputInfoList, nameof(outputInfoList));
 
             foreach (var outputInfo in outputInfoList)
             {
-                string finalOutput = StringUtils.FormatInvariant("\"" + _assembly.Location + "\"" + " | " + outputInfo);
+                string finalOutput = StringUtils.FormatInvariant("\"{0}\" | {1}", _assembly.Location, outputInfo);
 
                 if (string.IsNullOrWhiteSpace(_options.Output))
                 {
