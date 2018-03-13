@@ -4,6 +4,8 @@ using System.Linq;
 using System.IO;
 using System.Reflection;
 using System.Diagnostics.CodeAnalysis;
+using Utilities;
+
 using NUnit.Framework;
 
 namespace NUnitTestExtractor
@@ -12,86 +14,136 @@ namespace NUnitTestExtractor
     {
         private static Options _options = new Options();
 
-        public enum Level { Namespace, Class, Function, TestCase, Null }
+        private static Assembly _assembly = null;
 
-        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
-        static void Main(string[] args)
+        public enum Level { Namespace, Class, Function, TestCase };
+
+        public static int Main(string[] args)
         {
-            //Setting a default value
-            Level level = Level.Null;
-
             using (var parser = new CommandLine.Parser(with => with.HelpWriter = Console.Error))
             {
                 if (parser.ParseArgumentsStrict(args, _options, () => Environment.Exit(-1)))
                 {
-                    if (_options.Help)
+                    try
                     {
-                        Console.WriteLine(CommandLine.Text.HelpText.AutoBuild(_options));
-                        return;
-                    }
-                   
-                    if(!string.IsNullOrEmpty(_options.Output))
-                    {
-                        string directory = null;
-
-                        int index = _options.Output.LastIndexOf("/", StringComparison.OrdinalIgnoreCase);
-
-                        if (index > 0)
+                        if (_options.Help)
                         {
-                            directory = _options.Output.Substring(0, index);
-                        }  
-
-                        if (directory!=null && !Directory.Exists(directory))
-                        {
-                            Directory.CreateDirectory(directory);
+                            Console.WriteLine(CommandLine.Text.HelpText.AutoBuild(_options));
                         }
 
-                        if (!File.Exists(_options.Output))
+                        // _options.Output is an absolute path of output file for the test name list
+                        if (!string.IsNullOrEmpty(_options.Output))
                         {
-                            using (FileStream stream = File.Create(_options.Output)) { }
+                            CreateOutputFileParentDirectory();
+                        }
+
+                        foreach (var assembly in _options.DLLs)
+                        {
+                            GenerateInfoFromAssembly(assembly);
                         }
                     }
-
-                    if (_options.Level != null)
+                    catch (Exception e)
                     {
-                        StreamWriter writer = null;
-                        level = ParseLevel(_options.Level);
-                        try
-                        {
-                            if (_options.Output == null)
-                            {
-                                writer = new StreamWriter(Console.OpenStandardOutput());
-                            }
-                            else
-                            {
-                                writer = new StreamWriter(_options.Output, append: true);
-                            }
+                        Console.Error.WriteLine(StringUtils.FormatInvariant("Failed to process: {0}", e.InnerException));
 
-                            GetTests(_options.DLLs, level, writer);
-                        }
-                        finally
-                        {
-                            if (writer != null)
-                            {
-                                writer.Dispose();
-                                
-                            }
-                        }
+                        return -2;
                     }
                 }
+            }
+
+            return 0;
+        }
+
+        public static string ScopeLevel
+        {
+            get
+            {
+                return _options.Level;
+            }
+            set
+            {
+                _options.Level = value;
             }
         }
 
         /// <summary>
-        /// Writes each DLL file path along with either a namespace, class or function which contains tests(dependent on level specified by user)
+        /// Parses string into proper Level
         /// </summary>
-        /// <param name="writer"> StreamWriter used to write the dll path and data, either to a txt file or stdout </param>
-        /// <param name="dll"> The dll path which is written </param>
-        /// <param name="data"> The test information corrosponding to the dll file </param>
-        private static void WriteTestDllAndName(TextWriter writer, string dll, string data)
+        /// <param name="levelToParse">The string to parse</param>
+        /// <returns>The Level from parsing the string</returns>
+        public static Level ParseLevel(string levelToParse)
         {
-             writer.WriteLine("\""+dll+"\"" + " | " + data);
-             
+            ThrowIf.ArgumentNull(levelToParse, nameof(levelToParse));
+
+            return (Level)Enum.Parse(typeof(Level), levelToParse, ignoreCase: true);
+        }
+
+        /// <summary>
+        /// Create the output file's parent directory if it is necessary
+        /// </summary>
+        private static void CreateOutputFileParentDirectory()
+        {
+            FileInfo fi = new FileInfo(_options.Output);
+
+            // if the parent directory doesn't exist, then create it
+            if (!fi.Directory.Exists)
+            {
+                fi.Directory.Create();
+            }
+        }
+
+        /// <summary>
+        /// Get a list of Name spaces/classes/functions/test cases from the assembly
+        /// </summary>
+        /// <param name="assemblyFullPath"></param>
+        public static void GenerateInfoFromAssembly(string assemblyFullPath)
+        {
+            HashSet<string> testInfo = new HashSet<string>();
+
+            foreach (var item in GetValidTestSuiteTypesFromAssembly(assemblyFullPath))
+            {
+                Level lv = ParseLevel(_options.Level);
+
+                switch (lv)
+                {
+                    case Level.Namespace:
+                        testInfo.Add(item.Namespace);
+                        break;
+                    case Level.Class:
+                        testInfo.Add(item.FullName);
+                        break;
+                    case Level.Function:
+                        testInfo.UnionWith(GetValidTestsFromTestSuite(item));
+                        break;
+                    case Level.TestCase:
+                        throw new NotImplementedException("Test case level analyzing hasn't been implemented yet.");
+                    default:
+                        throw new ArgumentException(StringUtils.FormatInvariant("Invalid level option: {0}", lv.ToString()));
+                }
+            }
+
+            OutputInfo(testInfo);
+        }
+
+        /// <summary>
+        /// Load assembly by passing its path
+        /// </summary>
+        /// <param name="assemblyFullPath"></param>
+        [SuppressMessage("Microsoft.Reliability", "CA2001:AvoidCallingProblematicMethods", MessageId = "System.Reflection.Assembly.LoadFrom")]
+        private static void LoadAssembly(string assemblyFullPath)
+        {
+            ThrowIf.StringIsNullOrWhiteSpace(assemblyFullPath, nameof(assemblyFullPath));
+
+            try
+            {
+                _assembly = Assembly.LoadFrom(assemblyFullPath);
+            }
+            catch (FileNotFoundException)
+            {
+                string errorMessage = StringUtils.FormatInvariant("File was not found: '{0}'", assemblyFullPath);
+
+                throw new FileNotFoundException(errorMessage);
+            }
         }
 
         /// <summary>
@@ -127,8 +179,8 @@ namespace NUnitTestExtractor
             }
 
             // If the function attributes has either "Explicit" or "Ignore" attribute, it is not a valid NUnit test, skip it.
-            if (attributes.Any(x => x.AttributeType.Equals(typeof (ExplicitAttribute))) ||
-                attributes.Any(x => x.AttributeType.Equals(typeof (IgnoreAttribute))))
+            if (attributes.Any(x => x.AttributeType.Equals(typeof(ExplicitAttribute))) ||
+                attributes.Any(x => x.AttributeType.Equals(typeof(IgnoreAttribute))))
             {
                 return false;
             }
@@ -137,314 +189,108 @@ namespace NUnitTestExtractor
         }
 
         /// <summary>
-        /// Uses reflection in order to search user submitted dlls to find either namespaces, classes, or functions which contain tests, 
-        /// then uses WriteTestDllAndName() to  write data to either stdout or a txt file
+        /// Get all valid test suites from the assembly
         /// </summary>
-        /// <param name="dlls">The dlls which are submitted by user</param>
-        /// <param name="level">Specifies the level of granuality to use for the output: either namepspace, class or function</param>
-        /// <param name="writer">The StreamWriter which will be passed to WriteTestDllAndName() </param>
-        [SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
-        [SuppressMessage("Microsoft.Reliability", "CA2001:AvoidCallingProblematicMethods", MessageId = "System.Reflection.Assembly.LoadFrom")]
-        public static void GetTests(IList<string> dlls, Level level, TextWriter writer)
+        /// <param name="assemblyFullPath">The full qualified path for the assembly</param>
+        /// <returns>Return a list of test suites</returns>
+        private static HashSet<Type> GetValidTestSuiteTypesFromAssembly(string assemblyFullPath)
         {
-            List<string> testsWritten = new List<string>();
+            HashSet<Type> testSuites = new HashSet<Type>();
 
-            List<string> categoryNames = new List<string>();
+            LoadAssembly(assemblyFullPath);
 
-            if (dlls != null)
+            foreach (var item in _assembly.GetTypes())
             {
-                foreach (string dll in dlls)
+                if (IsValidTestSuite(item))
                 {
-                    Assembly assembly = null;
-                    try
+                    testSuites.Add(item);
+                }
+            }
+
+            return testSuites;
+        }
+
+        /// <summary>
+        /// Get all valid tests from the suite
+        /// </summary>
+        /// <param name="testSuite">A valid NUnit test suite</param>
+        /// <returns>Return a list of tests</returns>
+        private static HashSet<string> GetValidTestsFromTestSuite(Type testSuite)
+        {
+            HashSet<string> tests = new HashSet<string>();
+
+            foreach (MethodInfo test in testSuite.GetMethods())
+            {
+                var attributes = test.GetCustomAttributesData();
+
+                // if the function attributes don't have either"Test" or "TestCase" attribute, it is not a valid NUnit test, skip it.
+                if (!IsValidTestMethod(test))
+                {
+                    continue;
+                }
+
+                // search the category attributes for the function
+                var categories = attributes.Where(x => x.AttributeType.Equals(typeof(CategoryAttribute)));
+
+                // match the "Exclude" category from the function category attribute list
+                // if the function has matched exclude category, we will skip this function
+                if (categories.Any(x => x.ConstructorArguments.Any(y => y.Value.Equals(_options.ExcludeInfo))))
+                {
+                    continue;
+                }
+
+                // match the "Include" category from the function category attribute list
+                // if the function has matched include category, we will count this function as a valid test
+                if (string.IsNullOrWhiteSpace(_options.IncludeInfo)
+                    || categories.Any(x => x.ConstructorArguments.Any(y => y.Value.Equals(_options.IncludeInfo))))
+                {
+                    tests.Add(test.DeclaringType.GetTypeInfo().FullName + "." + test.Name);
+                }
+            }
+
+            return tests;
+        }
+
+        /// <summary>
+        /// Create the output file if it doesn't exist, or append it if it exists
+        /// </summary>
+        /// <param name="outputInfoList">The raw information need to be re-construct to our expected format.</param>
+        private static void OutputInfo(HashSet<string> outputInfoList)
+        {
+            ThrowIf.ArgumentNull(outputInfoList, nameof(outputInfoList));
+
+            foreach (var outputInfo in outputInfoList)
+            {
+                string finalOutput = StringUtils.FormatInvariant("\"{0}\" | {1}", _assembly.Location, outputInfo);
+
+                if (string.IsNullOrWhiteSpace(_options.Output))
+                {
+                    Console.WriteLine(finalOutput);
+                }
+                else
+                {
+                    using (StreamWriter writer = new StreamWriter(_options.Output, append: true))
                     {
-                        assembly = Assembly.LoadFrom(dll);
-                    }
-                    catch (FileNotFoundException e)
-                    {
-                        Console.Error.WriteLine("{0}: file {1} was not found on system", e.GetType(), dll);
-                        continue;
-                    }
-
-                    foreach (Type type in assembly.GetTypes())
-                    {
-                        // Skip Explicit or Ignored classes.
-                        if (!IsValidTestSuite(type))
-                        {
-                            continue;
-                        }
-
-                        foreach (MethodInfo methodInfo in type.GetMethods())
-                        {
-                            // Skip Explicit or Ignored test methods.
-                            if (!IsValidTestMethod(methodInfo))
-                            {
-                                continue;
-                            }
-
-                            var attributes = methodInfo.GetCustomAttributes(true);
-
-                            var categories = methodInfo.GetCustomAttributes(typeof(CategoryAttribute));
-                            
-                            foreach (var attr in attributes)
-                            {
-                                TestAttribute test = attr as TestAttribute;
-                                TestCaseAttribute testCase = attr as TestCaseAttribute;
-
-                                if (test != null || testCase != null)
-                                {
-                                    //adding categories from methods to list
-                                    AddMethodCategoriesToList(categoryNames, categories);
-
-                                    //adding categories from testcase into list
-                                    if (testCase != null && testCase.Categories != null)
-                                    {
-                                        AddTestCaseCategoriesToList(categoryNames, testCase);
-                                    }
-
-                                    bool include = true;
-                                    bool exclude = false;
-
-                                    if (!string.IsNullOrEmpty(_options.IncludeInfo))
-                                    {
-                                        include = Include(categoryNames, _options.IncludeInfo);
-                                    }
-
-                                    if (!string.IsNullOrEmpty(_options.ExcludeInfo))
-                                    {
-                                        exclude = Exclude(categoryNames, _options.ExcludeInfo);
-                                    }
-
-                                    string data = string.Empty;
-
-                                    //If exclude is true then move on to next method as this one has category marked as exluded
-                                    if (exclude)
-                                    {
-                                        continue;
-                                    }
-                                    else if (include)
-                                    {
-                                        data = FormattedTest(level, type, methodInfo, testCase, data);
-
-                                        //Prevent duplicate entries from being written
-                                        if (!string.IsNullOrEmpty(data) && !testsWritten.Contains(data))
-                                        {
-                                            WriteTestDllAndName(writer, dll, data);
-                                            testsWritten.Add(data);
-                                        }
-                                    }
-                                }
-                            }
-                            //reset categoryNames for next method
-                            categoryNames = new List<string>();
-                        }
+                        writer.WriteLine(finalOutput);
                     }
                 }
             }
-            else
-            {
-                throw new ArgumentNullException("dlls", "no dlls were specified");
-            }
         }
 
         /// <summary>
-        /// Returns the properly formatted test string depending on the level specified. 
+        /// 
         /// </summary>
-        /// <param name="level">Used in the switch statement to determine how much info to put into the data string</param>
-        /// <param name="type">Used to get the namespace of the test</param>
-        /// <param name="methodInfo">Used to get the test info such as declaring type and name</param>
-        /// <param name="testCase">Used to get arguments of a testcase</param>
-        /// <param name="data">The string which is modified and then returned</param>
-        /// <returns>Returns properly formatted test string</returns>
-        private static string FormattedTest(Level level, Type type, MethodInfo methodInfo, TestCaseAttribute testCase, string data)
-        {
-            switch (level)
-            {
-                case Level.Namespace:
-                    data = type.Namespace;
-                    break;
+        /// <param name="test"></param>
+        /// <returns></returns>
+        //private static string generateTestCaseName(MethodInfo test)
+        //{
+        //    string testCaseName = string.Empty;
 
-                case Level.Class:
-                    data = methodInfo.DeclaringType.ToString();
-                    break;
+        //    Console.WriteLine(test.Name);
 
-                case Level.Function:
-                    data = methodInfo.DeclaringType + "." + methodInfo.Name;
-                    break;
+        //    // under construction :)
 
-                case Level.TestCase:
-                    if (testCase != null)
-                    {
-                        data = FormattedTestCase(methodInfo.DeclaringType.ToString(), methodInfo.Name, testCase.Arguments, data);
-                    }
-
-                    break;
-            }
-
-            return data;
-        }
-
-        /// <summary>
-        /// Add testCase categories to categoryNames 
-        /// </summary>
-        /// <param name="categoryNames">list to add to</param>
-        /// <param name="testCase">testCase used to get arguments from</param>
-        private static void AddTestCaseCategoriesToList(List<string> categoryNames, TestCaseAttribute testCase)
-        {
-            foreach (string category in testCase.Categories)
-            {
-                categoryNames.Add(category);
-            }
-        }
-
-        /// <summary>
-        /// Add method categories to list
-        /// </summary>
-        /// <param name="categoryNames">list to add to</param>
-        /// <param name="categories">categories to add to list</param>
-        private static void AddMethodCategoriesToList(List<string> categoryNames, IEnumerable<Attribute> categories)
-        {
-            foreach (var category in categories)
-            {
-                CategoryAttribute categoryAttr = (CategoryAttribute)category;
-
-                categoryNames.Add(categoryAttr.Name);
-            }
-        }
-
-        /// <summary>
-        /// Used to determine whether or not the current test/testcase should be included 
-        /// </summary>
-        /// <param name="categoryNames">List of categories to compare info to</param>
-        /// <param name="includeInfo">string of info used to compare to categoryNames</param>
-        /// <returns>returns false if includeInfo is inside of the categoryNames List, true otherwise</returns>
-        public static bool Include(IReadOnlyList<string> categoryNames, string includeInfo)
-        {
-            if (!string.IsNullOrEmpty(includeInfo))
-            {
-                //Remove quotes from string in order to properly process it
-                includeInfo = includeInfo.Replace("\"", "");
-
-                List<string> includeInfoValues = new List<string>(includeInfo.Split(','));
-                
-                foreach (string value in includeInfoValues)
-                {
-                    if (categoryNames != null && !categoryNames.Contains(value))
-                    {
-                        return false;
-                    }
-                }
-                return true;
-            }
-            throw new ArgumentNullException("includeInfo", "no includeInfo specified");
-
-        }
-
-        /// <summary>
-        /// Used to determine whether or not a test/testcase should be excluded or not
-        /// </summary>
-        /// <param name="categoryNames">List of categories to compare info to</param>
-        /// <param name="excludeInfo">string of info used to compare to categoryNames</param>
-        /// <returns>returns true if excludeInfo is inside of the categoryNames List, false otherwise</returns>
-        public static bool Exclude(IReadOnlyList<string> categoryNames, string excludeInfo)
-        {
-            if (!string.IsNullOrEmpty(excludeInfo))
-            {
-                excludeInfo = excludeInfo.Replace("\"", "");
-
-                List<string> excludeInfoValues = new List<string>(excludeInfo.Split(','));
-
-                foreach (string value in excludeInfoValues)
-                {
-                    if (categoryNames != null && categoryNames.Contains(value))
-                    {
-                        return true;
-                    }
-                }
-                return false;
-            }
-            throw new ArgumentNullException("excludeInfo", "no excludeInfo specified");
-        }
-
-        /// <summary>
-        /// Depending on number of args within the TestCase, function will return properly formatted testcase
-        /// </summary>
-        /// <param name="declaringType">declaring type of testcase method(namespace.class)</param>
-        /// <param name="name">name of testcase</param>
-        /// <param name="testCaseArgs">the object array containing the testcase's arguments</param>
-        /// <param name="data">the string which is appended to</param>
-        /// <returns>the properly formatted TestCase string</returns>
-        public static string FormattedTestCase(string declaringType, string name, object[] testCaseArgs, string data)
-        {
-
-            if (testCaseArgs != null && testCaseArgs.Length > 0)
-            {
-                data = declaringType + "." + name + "(";
-                data = AppendArgumentsForTestCasesToString(testCaseArgs, data);
-                data += ")";
-            }
-            else if (testCaseArgs != null && testCaseArgs.Length == 0)
-            {
-                data = declaringType + "." + name + "()";
-            }
-
-            return data;
-        }
-
-        /// <summary>
-        /// Parses string into proper Level
-        /// </summary>
-        /// <param name="levelToParse">The string to parse</param>
-        /// <returns>The Level from parsing the string</returns>
-        public static Level ParseLevel(string levelToParse)
-        {
-            Level level = Level.Null;
-            try
-            {
-                level = (Level)Enum.Parse(typeof(Level), levelToParse, ignoreCase: true);
-            }
-            catch(ArgumentException e)
-            {
-                Console.Error.WriteLine(e.GetType() + ": Please enter either Namespace, Class, or Function for level");
-                Environment.Exit(-1);
-            }
-            return level;
-        }
-
-        /// <summary>
-        /// Appends all of a TestCase's arguments to a string
-        /// </summary>
-        /// <param name="args">array of arguments to append to string</param>
-        /// <param name="data">the string to add to and also return</param>
-        /// <returns>all of the arguments in a string with proper formatting</returns>
-        public static string AppendArgumentsForTestCasesToString(object[] args, string data)
-        {
-            if(args != null)
-            {
-                List<string> testArgs = new List<string>();
-                 
-                foreach(object arg in args)
-                {
-                    string argString = arg as string;
-
-                    if(argString != null)
-                    {
-                        testArgs.Add("\"" + arg + "\"");
-                    }
-                    else if (arg == null)
-                    {
-                        testArgs.Add("null");
-                    }
-                    else
-                    {
-                        testArgs.Add(arg.ToString());
-                    }                    
-                }
-                data += string.Join(", ", testArgs);
-
-                return data;
-            }
-            throw new ArgumentNullException("args", "no args were specified");
-        }
+        //    return testCaseName;
+        //}
     }
 }
