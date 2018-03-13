@@ -4,7 +4,6 @@ using System.Linq;
 using System.IO;
 using System.Reflection;
 using System.Diagnostics.CodeAnalysis;
-
 using Utilities;
 
 using NUnit.Framework;
@@ -148,10 +147,10 @@ namespace NUnitTestExtractor
         }
 
         /// <summary>
-        /// Validate whether the type object is a valid test suite
+        /// Validate whether the type object is a valid NUnit test suite.
         /// </summary>
         /// <param name="type">This is the Type we want to validate.</param>
-        /// <returns>Return a boolean value if the type is a NUnit test suite.</returns>
+        /// <returns>Return a bool value if the type is a NUnit test suite.</returns>
         private static bool IsValidTestSuite(Type type)
         {
             return type.IsClass
@@ -159,6 +158,34 @@ namespace NUnitTestExtractor
                 && type.CustomAttributes.Any(x => x.AttributeType.Equals(typeof(TestFixtureAttribute)))
                 && !type.CustomAttributes.Any(x => x.AttributeType.Equals(typeof(ExplicitAttribute)))
                 && !type.CustomAttributes.Any(x => x.AttributeType.Equals(typeof(IgnoreAttribute)));
+        }
+
+        /// <summary>
+        /// Returns true only if the specified method is a valid NUnit test that is not marked as Explicit or Ignore.
+        /// </summary>
+        /// <param name="method">The method to check.</param>
+        /// <returns>True only if the specified method is a valid NUnit test that is not marked as Explicit or Ignore, otherwise false.</returns>
+        private static bool IsValidTestMethod(MethodInfo method)
+        {
+            var attributes = method.GetCustomAttributesData();
+
+            // If the function attributes doesn't have either "Test", "TestCase" or "TestCaseSource" attribute, it is not a valid NUnit test, skip it.
+            if (!attributes.Any(x => x.AttributeType.Equals(typeof(TestAttribute)) ||
+                                     x.AttributeType.Equals(typeof(TestCaseAttribute)) ||
+                                     x.AttributeType.Equals(typeof(TestCaseSourceAttribute))
+                               ))
+            {
+                return false;
+            }
+
+            // If the function attributes has either "Explicit" or "Ignore" attribute, it is not a valid NUnit test, skip it.
+            if (attributes.Any(x => x.AttributeType.Equals(typeof(ExplicitAttribute))) ||
+                attributes.Any(x => x.AttributeType.Equals(typeof(IgnoreAttribute))))
+            {
+                return false;
+            }
+
+            return true;
         }
 
         /// <summary>
@@ -197,13 +224,7 @@ namespace NUnitTestExtractor
                 var attributes = test.GetCustomAttributesData();
 
                 // if the function attributes don't have either"Test" or "TestCase" attribute, it is not a valid NUnit test, skip it.
-                if (!attributes.Any(x => x.AttributeType.Equals(typeof(TestAttribute)) || x.AttributeType.Equals(typeof(TestCaseAttribute))))
-                {
-                    continue;
-                }
-
-                // if the function attributes have either "Explicit" or "Ignore" attribute, it is not a valid NUnit test, skip it.
-                if (attributes.Any(x => x.AttributeType.Equals(typeof(ExplicitAttribute))) || attributes.Any(x => x.AttributeType.Equals(typeof(IgnoreAttribute))))
+                if (!IsValidTestMethod(test))
                 {
                     continue;
                 }
