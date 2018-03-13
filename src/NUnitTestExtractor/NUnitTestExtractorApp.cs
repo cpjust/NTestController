@@ -150,7 +150,7 @@ namespace NUnitTestExtractor
         /// Validate whether the type object is a valid NUnit test suite.
         /// </summary>
         /// <param name="type">This is the Type we want to validate.</param>
-        /// <returns>Return a bool value if the type is a NUnit test suite.</returns>
+        /// <returns>Return a boolean value if the type is a NUnit test suite.</returns>
         private static bool IsValidTestSuite(Type type)
         {
             return type.IsClass
